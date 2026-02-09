@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="pt-pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Hub Comercial | Performa LAB</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { background-color: #f8fafc; font-family: 'Inter', sans-serif; }
+        .card-hover { transition: all 0.3s ease; }
+        .card-hover:active { transform: scale(0.95); }
+        .bg-performa { background-color: #1E3A8A; }
+        .text-performa-yellow { color: #FFB84D; }
+    </style>
+</head>
+<body class="flex flex-col min-h-screen">
+
+    <!-- Header -->
+    <header class="bg-performa text-white py-8 px-6 shadow-lg text-center">
+        <img src="https://cdn.abacus.ai/images/489d8ed5-8803-4d48-981f-2f5a6b8ef9d3.png" alt="Performa LAB" class="h-20 mx-auto mb-4">
+        <h1 class="text-2xl font-bold tracking-tight">SISTEMA COMERCIAL INTEGRADO</h1>
+        <p class="text-blue-200 opacity-80">Michelle Borba | Gestora Comercial</p>
+    </header>
+
+    <!-- Main Content -->
+    <main class="flex-grow container mx-auto px-6 py-10 max-w-4xl">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            
+            <!-- Card 1: Diagnóstico -->
+            <a href="diagnostico-performa.html" class="card-hover block bg-white rounded-2xl shadow-sm border border-gray-100 p-8 text-center hover:shadow-md">
+                <div class="w-16 h-16 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i class="fas fa-clipboard-list text-2xl text-blue-600"></i>
+                </div>
+                <h2 class="text-xl font-bold text-gray-800 mb-2">1. Diagnóstico</h2>
+                <p class="text-gray-500 text-sm">Briefing inicial e qualificação do cliente para recomendação de pacotes.</p>
+            </a>
+
+            <!-- Card 2: Proposta -->
+            <a href="proposta-performa.html" class="card-hover block bg-white rounded-2xl shadow-sm border border-gray-100 p-8 text-center hover:shadow-md">
+                <div class="w-16 h-16 bg-amber-50 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i class="fas fa-file-invoice-dollar text-2xl text-amber-600"></i>
+                </div>
+                <h2 class="text-xl font-bold text-gray-800 mb-2">2. Proposta Comercial</h2>
+                <p class="text-gray-500 text-sm">Gerador de PDF premium com cálculos de descontos e pacotes.</p>
+            </a>
+
+            <!-- Card 3: Contrato -->
+            <a href="contrato-performa.html" class="card-hover block bg-white rounded-2xl shadow-sm border border-gray-100 p-8 text-center hover:shadow-md">
+                <div class="w-16 h-16 bg-green-50 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i class="fas fa-file-signature text-2xl text-green-600"></i>
+                </div>
+                <h2 class="text-xl font-bold text-gray-800 mb-2">3. Contrato Digital</h2>
+                <p class="text-gray-500 text-sm">Emissão de contrato jurídico com cláusulas atualizadas e IVA incluído.</p>
+            </a>
+
+            <!-- Card 4: CRM -->
+<a href="crm-performa.html" class="card-hover block bg-white rounded-2xl shadow-sm border border-gray-100 p-8 text-center hover:shadow-md">
+    <div class="w-16 h-16 bg-purple-50 rounded-full flex items-center justify-center mx-auto mb-4">
+        <i class="fas fa-users text-2xl text-purple-600"></i>
+    </div>
+    <h2 class="text-xl font-bold text-gray-800 mb-2">4. CRM</h2>
+    <p class="text-gray-500 text-sm">Gestão de clientes, pipeline de vendas e acompanhamento de propostas.</p>
+</a>            </div>
+
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="py-6 text-center text-gray-400 text-xs">
+        &copy; 2024 Performa LAB Ecosystem | Escalonável & Prático
+    </footer>
+
+</body>
+</html>

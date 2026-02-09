@@ -1,0 +1,873 @@
+<!doctype html>
+<html lang="pt-PT">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Performa LAB — Briefing de Diagnóstico v2</title>
+  <style>
+    :root{
+      --bg:#0b0f19; --card:#121a2a; --muted:#8ea0c1; --text:#eaf0ff;
+      --accent:#FFB84D; --accent2:#1E3A8A; --danger:#ff6a8b; --ok:#34d399;
+      --border:rgba(255,255,255,.10);
+      --shadow: 0 12px 30px rgba(0,0,0,.35);
+      --radius: 18px;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial;
+      background: radial-gradient(1200px 800px at 10% 0%, rgba(255,184,77,.12), transparent 60%),
+                  radial-gradient(900px 700px at 90% 10%, rgba(30,58,138,.12), transparent 55%),
+                  var(--bg);
+      color:var(--text);
+    }
+    .wrap{max-width:1050px; margin:0 auto; padding:24px 16px 60px;}
+    header{
+      display:flex; flex-wrap:wrap; gap:14px; align-items:center; justify-content:space-between;
+      margin:10px 0 18px;
+    }
+    .brand{
+      display:flex; gap:12px; align-items:center;
+    }
+    .logo{
+      width:50px; height:50px; border-radius:14px;
+      background:url('https://cdn.abacus.ai/images/489d8ed5-8803-4d48-981f-2f5a6b8ef9d3.png') center/contain no-repeat;
+      box-shadow: var(--shadow);
+    }
+    h1{font-size:20px; margin:0; color:var(--accent);}
+    .sub{color:var(--muted); font-size:13px; margin-top:2px}
+    .actions{display:flex; gap:10px; flex-wrap:wrap}
+    button{
+      border:1px solid var(--border);
+      background: rgba(255,255,255,.06);
+      color: var(--text);
+      padding:10px 14px;
+      border-radius: 14px;
+      font-weight:600;
+      cursor:pointer;
+      backdrop-filter: blur(10px);
+      font-size:13px;
+      transition:.2s;
+    }
+    button.primary{
+      background: linear-gradient(135deg, rgba(255,184,77,.25), rgba(30,58,138,.25));
+      border-color: rgba(255,184,77,.45);
+    }
+    button.danger{ border-color: rgba(255,106,139,.45); }
+    button:hover{ transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,.2); }
+    button:active{ transform: translateY(1px); }
+
+    .grid{display:grid; grid-template-columns: 1fr; gap:14px;}
+    @media(min-width:900px){ .grid{ grid-template-columns: 1fr 1fr; } }
+
+    .card{
+      background: rgba(18,26,42,.92);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 16px;
+    }
+    .card h2{
+      font-size:14px; margin:0 0 10px;
+      letter-spacing:.3px; text-transform: uppercase;
+      color: rgba(234,240,255,.92);
+      display:flex; align-items:center; justify-content:space-between;
+    }
+    .hint{font-size:12px; color:var(--muted); font-weight:500; text-transform:none; letter-spacing:0;}
+    label{display:block; font-size:13px; color: rgba(234,240,255,.88); margin:10px 0 6px; font-weight:600;}
+    label.required::after{content:" *"; color:var(--danger);}
+    input[type="text"], input[type="tel"], input[type="url"], input[type="number"], input[type="email"], textarea, select{
+      width:100%;
+      background: rgba(255,255,255,.05);
+      border:1px solid var(--border);
+      color:var(--text);
+      padding:12px 12px;
+      border-radius: 14px;
+      outline:none;
+      font-size: 14px;
+      transition:.2s;
+    }
+    input:focus, select:focus, textarea:focus{
+      border-color:var(--accent);
+      box-shadow: 0 0 0 3px rgba(255,184,77,.1);
+    }
+    textarea{ min-height: 92px; resize: vertical; }
+    .row{display:grid; grid-template-columns: 1fr; gap:10px;}
+    @media(min-width:900px){ .row.two{ grid-template-columns: 1fr 1fr; } }
+
+    .checks{display:grid; grid-template-columns: 1fr; gap:8px; margin-top:8px;}
+    @media(min-width:520px){ .checks{ grid-template-columns: 1fr 1fr; } }
+    .check{
+      display:flex; gap:10px; align-items:flex-start;
+      padding:10px 10px;
+      border:1px solid var(--border);
+      border-radius: 14px;
+      background: rgba(255,255,255,.03);
+      transition:.2s;
+    }
+    .check:hover{ background: rgba(255,255,255,.06); }
+    .check input{ transform: scale(1.25); margin-top:2px; cursor:pointer; }
+    .check small{ display:block; color: var(--muted); margin-top:2px; font-size:12px; }
+
+    .footer{
+      margin-top:14px;
+      display:grid; grid-template-columns: 1fr; gap:14px;
+    }
+    @media(min-width:900px){ .footer{ grid-template-columns: 1.15fr .85fr; } }
+
+    .result{
+      border:1px dashed rgba(255,184,77,.35);
+      background: rgba(255,184,77,.06);
+      border-radius: var(--radius);
+      padding: 14px;
+    }
+    .pill{
+      display:inline-flex; align-items:center; gap:8px;
+      border:1px solid var(--border);
+      background: rgba(255,255,255,.05);
+      padding:8px 10px; border-radius: 999px; font-size:12px; color: var(--muted);
+      margin: 6px 6px 0 0;
+    }
+    .kpi{display:flex; flex-wrap:wrap; gap:8px; margin-top:8px;}
+    .good{border-color: rgba(52,211,153,.35); background: rgba(52,211,153,.08); color: rgba(234,240,255,.92);}
+    .warn{border-color: rgba(255,200,87,.35); background: rgba(255,200,87,.08); color: rgba(234,240,255,.92);}
+    .bad{border-color: rgba(255,106,139,.35); background: rgba(255,106,139,.08); color: rgba(234,240,255,.92);}
+    .mono{font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;}
+    .tiny{font-size:12px; color:var(--muted);}
+    .alert{
+      background: rgba(255,106,139,.1);
+      border:1px solid rgba(255,106,139,.3);
+      padding:12px;
+      border-radius:12px;
+      margin-top:10px;
+      font-size:13px;
+      color:var(--danger);
+    }
+    
+    /* Modal */
+    .modal{
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.85);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      backdrop-filter: blur(8px);
+    }
+    .modal.show{ display: flex; }
+    .modal-content{
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 32px;
+      max-width: 500px;
+      width: 90%;
+      box-shadow: var(--shadow);
+      text-align: center;
+    }
+    .modal-content h3{
+      font-size: 24px;
+      margin: 0 0 12px;
+      color: var(--accent);
+    }
+    .modal-content p{
+      color: var(--muted);
+      margin-bottom: 24px;
+      font-size: 14px;
+    }
+    .modal-btn{
+      display: block;
+      width: 100%;
+      background: var(--accent2);
+      color: white;
+      padding: 16px;
+      border-radius: 12px;
+      margin-bottom: 12px;
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 15px;
+      border: none;
+      cursor: pointer;
+      transition: .2s;
+    }
+    .modal-btn:hover{
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(30,58,138,.4);
+    }
+    .modal-btn.secondary{
+      background: #7c3aed;
+    }
+    .modal-btn.tertiary{
+      background: #6b7280;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div class="brand">
+        <div class="logo" aria-hidden="true"></div>
+        <div>
+          <h1>Performa LAB — Briefing de Diagnóstico v2</h1>
+          <div class="sub">Uso interno • para alimentar a IA e recomendar o pacote ideal (Start/Core/Scale)</div>
+        </div>
+      </div>
+      <div class="actions">
+        <button class="primary" type="button" onclick="analisar()">🎯 Gerar Recomendação</button>
+        <button type="button" onclick="exportar('json')">📥 JSON</button>
+        <button type="button" onclick="exportar('csv')">📊 CSV</button>
+        <button type="button" onclick="verHistorico()">📋 Histórico</button>
+        <button class="danger" type="button" onclick="limpar()">🗑️ Limpar</button>
+      </div>
+    </header>
+
+    <div class="grid">
+      <section class="card">
+        <h2>1) Identidade do negócio <span class="hint">Base de contexto</span></h2>
+        <div class="row two">
+          <div>
+            <label class="required">Nome do restaurante</label>
+            <input id="nome" type="text" placeholder="Ex.: Sabor do Brasil" required />
+          </div>
+          <div>
+            <label class="required">Cidade / Bairro</label>
+            <input id="local" type="text" placeholder="Ex.: Viseu • Centro" required />
+          </div>
+        </div>
+        <div class="row two">
+          <div>
+            <label>Tipo de cozinha</label>
+            <select id="cozinha">
+              <option value="">— selecionar —</option>
+              <option>Brasileira</option>
+              <option>Portuguesa</option>
+              <option>Italiana</option>
+              <option>Asiática</option>
+              <option>Fusion</option>
+              <option>Fast-casual</option>
+              <option>Outra</option>
+            </select>
+          </div>
+          <div>
+            <label>Tempo de funcionamento</label>
+            <select id="tempo">
+              <option value="">— selecionar —</option>
+              <option value="lt6">Menos de 6 meses</option>
+              <option value="6a24">6 meses a 2 anos</option>
+              <option value="gt24">Mais de 2 anos</option>
+            </select>
+          </div>
+        </div>
+        <div class="row two">
+          <div>
+            <label>Número médio de lugares</label>
+            <select id="lugares">
+              <option value="">— selecionar —</option>
+              <option value="ate30">Até 30</option>
+              <option value="30a60">30–60</option>
+              <option value="60plus">60+</option>
+            </select>
+          </div>
+          <div>
+            <label>Ticket médio estimado (€)</label>
+            <select id="ticket">
+              <option value="">— selecionar —</option>
+              <option value="ate15">Até €15</option>
+              <option value="15a30">€15–30</option>
+              <option value="30plus">€30+</option>
+            </select>
+          </div>
+        </div>
+        <div class="row two">
+          <div>
+            <label>Contacto principal</label>
+            <input id="contacto" type="tel" placeholder="+351 ..." />
+          </div>
+          <div>
+            <label>Email</label>
+            <input id="email" type="email" placeholder="contato@restaurante.pt" />
+          </div>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>2) Decisão & maturidade <span class="hint">Qualificação</span></h2>
+
+        <label class="required">Quem está respondendo?</label>
+        <select id="cargo" required>
+          <option value="">— selecionar —</option>
+          <option value="dono">Dono / Sócio</option>
+          <option value="gerente">Gerente</option>
+          <option value="outro">Outro</option>
+        </select>
+
+        <label class="required">Você decide sobre marketing e investimentos digitais?</label>
+        <select id="decide" required>
+          <option value="">— selecionar —</option>
+          <option value="sim">Sim</option>
+          <option value="nao">Não</option>
+        </select>
+
+        <label>Já investiu em marketing digital antes?</label>
+        <select id="investiu">
+          <option value="">— selecionar —</option>
+          <option value="nunca">Nunca</option>
+          <option value="ruim">Já, mas sem resultados claros</option>
+          <option value="ok">Sim, com algum retorno</option>
+        </select>
+
+        <label>Nível de urgência</label>
+        <select id="urgencia">
+          <option value="">— selecionar —</option>
+          <option value="baixa">Explorando opções</option>
+          <option value="media">Preciso resolver em 1-2 meses</option>
+          <option value="alta">Urgente (semanas)</option>
+        </select>
+
+        <label>Notas (contexto rápido)</label>
+        <textarea id="notas" placeholder="Ex.: já trocaram de agência, problemas com consistência, dono quer previsibilidade..."></textarea>
+      </section>
+
+      <section class="card">
+        <h2>3) Presença digital atual <span class="hint">Marca & base</span></h2>
+
+        <label>O restaurante possui (marque o que existe hoje):</label>
+        <div class="checks">
+          <div class="check"><input id="ig" type="checkbox"><div><b>Instagram ativo</b><small>Posts recentes, stories, coerência visual</small></div></div>
+          <div class="check"><input id="gmaps" type="checkbox"><div><b>Google Maps otimizado</b><small>Fotos, reviews, horário correto</small></div></div>
+          <div class="check"><input id="site" type="checkbox"><div><b>Website próprio</b><small>Domínio, menu, contacto, localização</small></div></div>
+          <div class="check"><input id="qr" type="checkbox"><div><b>Cardápio digital com QR</b><small>Bonito, rápido, atualizado</small></div></div>
+        </div>
+
+        <div class="row two">
+          <div>
+            <label>Você sente que a presença digital representa a qualidade do restaurante?</label>
+            <select id="presenca">
+              <option value="">— selecionar —</option>
+              <option value="nao">Não representa</option>
+              <option value="ok">Está ok</option>
+              <option value="top">Está profissional</option>
+            </select>
+          </div>
+          <div>
+            <label>Quando alguém encontra o restaurante online, você sente:</label>
+            <select id="orgulho">
+              <option value="">— selecionar —</option>
+              <option value="vergonha">Vergonha</option>
+              <option value="tanto_faz">Indiferença</option>
+              <option value="orgulho">Orgulho</option>
+            </select>
+          </div>
+        </div>
+
+        <label>Links (opcional)</label>
+        <div class="row two">
+          <input id="link_ig" type="url" placeholder="Instagram URL" />
+          <input id="link_gmaps" type="url" placeholder="Google Maps URL" />
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>4) Vendas & plataformas <span class="hint">Margem & dependência</span></h2>
+
+        <label>Modelo de vendas atual</label>
+        <select id="modelo">
+          <option value="">— selecionar —</option>
+          <option value="salao">Apenas salão</option>
+          <option value="salao_take">Salão + take-away</option>
+          <option value="salao_del">Salão + delivery</option>
+        </select>
+
+        <label>Usa Glovo / Uber Eats?</label>
+        <select id="plataformas">
+          <option value="">— selecionar —</option>
+          <option value="nao">Não</option>
+          <option value="ocasional">Sim, ocasionalmente</option>
+          <option value="diario">Sim, diariamente</option>
+        </select>
+
+        <label>% estimado do faturamento vindo das plataformas</label>
+        <select id="pct_plat">
+          <option value="">— selecionar —</option>
+          <option value="0a20">0–20%</option>
+          <option value="20a40">20–40%</option>
+          <option value="40plus">40%+</option>
+        </select>
+
+        <label>Reduzir dependência é prioridade?</label>
+        <select id="prioridade_indep">
+          <option value="">— selecionar —</option>
+          <option value="dor">Sim, é uma dor clara</option>
+          <option value="naosei">Sim, mas não sei como</option>
+          <option value="nao">Não é prioridade</option>
+        </select>
+
+        <label>Concorrência local</label>
+        <select id="concorrencia">
+          <option value="">— selecionar —</option>
+          <option value="baixa">Pouca concorrência</option>
+          <option value="media">Concorrência moderada</option>
+          <option value="alta">Muito competitivo</option>
+        </select>
+      </section>
+
+      <section class="card">
+        <h2>5) Objetivos reais <span class="hint">Direção</span></h2>
+
+        <label class="required">Principal objetivo agora</label>
+        <select id="objetivo" required>
+          <option value="">— selecionar —</option>
+          <option value="atrair">Atrair mais clientes</option>
+          <option value="vendermais">Vender mais aos mesmos clientes</option>
+          <option value="organizar">Organizar o digital</option>
+          <option value="reduzir_taxas">Reduzir taxas das plataformas</option>
+          <option value="escalar">Escalar o negócio</option>
+        </select>
+
+        <label>Onde quer estar em 6 meses?</label>
+        <div class="checks">
+          <div class="check"><input id="meta_cheio" type="checkbox"><div><b>Mais cheio</b><small>Ocupação consistente</small></div></div>
+          <div class="check"><input id="meta_lucro" type="checkbox"><div><b>Mais lucrativo</b><small>Melhor margem</small></div></div>
+          <div class="check"><input id="meta_indep" type="checkbox"><div><b>Menos dependente de terceiros</b><small>Canal próprio</small></div></div>
+          <div class="check"><input id="meta_unidade" type="checkbox"><div><b>Pronto para nova unidade</b><small>Processo escalável</small></div></div>
+        </div>
+
+        <label>Se o digital funcionasse bem, o que mudaria no dia a dia?</label>
+        <textarea id="mudaria" placeholder="Ex.: previsibilidade, menos stress com apps, mais reservas, ticket maior..."></textarea>
+      </section>
+
+      <section class="card">
+        <h2>6) Investimento (sem falar "preço") <span class="hint">Encaixe de pacote</span></h2>
+
+        <label>Investir no digital precisa:</label>
+        <select id="perfil_inv">
+          <option value="">— selecionar —</option>
+          <option value="acessivel">Ser o mais acessível possível</option>
+          <option value="custo_beneficio">Ter bom custo-benefício</option>
+          <option value="crescimento">Trazer crescimento real, mesmo com investimento maior</option>
+        </select>
+
+        <label>Você prefere:</label>
+        <select id="preferencia">
+          <option value="">— selecionar —</option>
+          <option value="pontual">Algo pontual para testar</option>
+          <option value="mensal">Um parceiro mensal</option>
+          <option value="estrutura">Uma estrutura completa de crescimento</option>
+        </select>
+
+        <label>O que mais frustra hoje no digital?</label>
+        <textarea id="frustracao" placeholder="Ex.: posts não trazem clientes, tudo depende de promo nas apps, falta de tempo, imagem amadora..."></textarea>
+      </section>
+    </div>
+
+    <div class="footer">
+      <section class="result card">
+        <h2>Recomendação (gerada) <span class="hint">Use no fecho</span></h2>
+        <div id="rec_pacote" style="font-size:20px; font-weight:800; margin-top:6px; color:var(--accent);">—</div>
+        <div id="rec_score" style="font-size:12px; color:var(--muted); margin-top:4px;"></div>
+        <div id="rec_diag" style="margin-top:10px; color:rgba(234,240,255,.92); line-height:1.5;">Preencha os campos obrigatórios e clique em <b>Gerar Recomendação</b>.</div>
+
+        <div class="kpi" id="kpis"></div>
+
+        <div id="proximos_passos" style="display:none; margin-top:14px;">
+          <label>Próximos Passos Recomendados</label>
+          <div id="passos_lista" style="margin-top:8px;"></div>
+        </div>
+
+        <label style="margin-top:14px;">Texto pronto para enviar ao cliente (WhatsApp)</label>
+        <textarea id="texto_cliente" class="mono" readonly></textarea>
+        <div class="actions" style="margin-top:10px;">
+          <button type="button" onclick="copiar('texto_cliente')">📋 Copiar Texto</button>
+          <button class="primary" type="button" onclick="mostrarProximaAcao()">🚀 Próximos Passos</button>
+        </div>
+        <div class="tiny" style="margin-top:8px;">
+          Dica: copie e personalize 1–2 palavras para soar 100% humano.
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>Export / IA <span class="hint">Copiar e colar</span></h2>
+        <label>Prompt interno (cole as respostas exportadas abaixo)</label>
+        <textarea id="prompt_interno" class="mono" readonly style="min-height:180px;"></textarea>
+        <div class="actions" style="margin-top:10px;">
+          <button type="button" onclick="copiar('prompt_interno')">📋 Copiar Prompt</button>
+          <button type="button" onclick="salvarHistorico()">💾 Salvar no Histórico</button>
+        </div>
+        <div class="tiny" style="margin-top:10px;">
+          ✅ Autosave local ativado. Você pode fechar e voltar depois.
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <!-- Modal Próxima Ação -->
+  <div id="modalProximaAcao" class="modal">
+    <div class="modal-content">
+      <h3>✅ Diagnóstico Salvo!</h3>
+      <p>O que deseja fazer agora?</p>
+      
+      <a href="proposta-performa.html" class="modal-btn">
+        📄 Gerar Proposta Comercial
+      </a>
+      
+      <a href="crm-performa.html" class="modal-btn secondary">
+        👥 Adicionar ao CRM
+      </a>
+      
+      <a href="contrato-performa.html" class="modal-btn secondary">
+        📝 Gerar Contrato
+      </a>
+      
+      <button onclick="fecharModal()" class="modal-btn tertiary">
+        🔄 Novo Diagnóstico
+      </button>
+    </div>
+  </div>
+
+<script>
+  const KEY = "performa_briefing_v2";
+  const HISTORY_KEY = "performa_briefing_history";
+  const CLIENTE_KEY = "cliente_atual_performa";
+
+  const ids = [
+    "nome","local","cozinha","tempo","lugares","ticket","contacto","email",
+    "cargo","decide","investiu","urgencia","notas",
+    "ig","gmaps","site","qr","presenca","orgulho","link_ig","link_gmaps",
+    "modelo","plataformas","pct_plat","prioridade_indep","concorrencia",
+    "objetivo","meta_cheio","meta_lucro","meta_indep","meta_unidade","mudaria",
+    "perfil_inv","preferencia","frustracao"
+  ];
+
+  let pacoteRecomendado = "";
+
+  function getState(){
+    const s = {};
+    ids.forEach(id=>{
+      const el = document.getElementById(id);
+      if(!el) return;
+      if(el.type === "checkbox") s[id] = el.checked;
+      else s[id] = el.value || "";
+    });
+    s._timestamp = new Date().toISOString();
+    return s;
+  }
+
+  function setState(s){
+    ids.forEach(id=>{
+      const el = document.getElementById(id);
+      if(!el || s[id] === undefined) return;
+      if(el.type === "checkbox") el.checked = !!s[id];
+      else el.value = s[id];
+    });
+  }
+
+  function save(){
+    localStorage.setItem(KEY, JSON.stringify(getState()));
+  }
+
+  function load(){
+    const raw = localStorage.getItem(KEY);
+    if(!raw) return;
+    try{ setState(JSON.parse(raw)); }catch(e){}
+  }
+
+  function limpar(){
+    if(!confirm("Limpar tudo?")) return;
+    localStorage.removeItem(KEY);
+    localStorage.removeItem(CLIENTE_KEY);
+    location.reload();
+  }
+
+  function validarCamposObrigatorios(){
+    const required = ["nome","local","cargo","decide","objetivo"];
+    for(let id of required){
+      const el = document.getElementById(id);
+      if(!el.value.trim()){
+        alert(`⚠️ Campo obrigatório não preenchido: ${el.previousElementSibling.textContent}`);
+        el.focus();
+        return false;
+      }
+    }
+    return true;
+  }
+
+  function pacoteLabel(p){
+    if(p==="start") return "Performa Start";
+    if(p==="core") return "Performa Core (Âncora)";
+    if(p==="scale") return "Performa Scale (Premium)";
+    return "—";
+  }
+
+  function pacoteParaIntegracao(p){
+    if(p==="start") return "start";
+    if(p==="core") return "core";
+    if(p==="scale") return "scale";
+    return "";
+  }
+
+  // Scoring refinado com pesos
+  function analisar(){
+    if(!validarCamposObrigatorios()) return;
+
+    const s = getState();
+
+    let scoreStart = 0, scoreCore = 0, scoreScale = 0;
+
+    // Decisão (peso alto)
+    if(s.decide !== "sim") scoreStart += 3;
+    if(s.decide === "sim") { scoreCore += 2; scoreScale += 2; }
+
+    // Presença / marca (peso alto)
+    if(s.presenca === "nao" || s.orgulho === "vergonha") scoreStart += 4;
+    if(s.presenca === "ok") scoreCore += 2;
+    if(s.presenca === "top" && s.orgulho === "orgulho") scoreScale += 2;
+
+    const baseDigital = (s.ig?1:0)+(s.gmaps?1:0)+(s.site?1:0)+(s.qr?1:0);
+    if(baseDigital <= 1) scoreStart += 3;
+    if(baseDigital === 2 || baseDigital === 3) scoreCore += 2;
+    if(baseDigital >= 3) scoreScale += 1;
+
+    // Plataformas / independência (peso muito alto)
+    if(s.plataformas === "diario") { scoreCore += 3; scoreScale += 3; }
+    if(s.pct_plat === "40plus") { scoreCore += 3; scoreScale += 4; }
+    if(s.pct_plat === "20a40") { scoreCore += 2; scoreScale += 2; }
+    if(s.prioridade_indep === "dor" || s.prioridade_indep === "naosei") { scoreCore += 3; scoreScale += 2; }
+
+    // Objetivo (peso alto)
+    if(s.objetivo === "organizar") scoreStart += 4;
+    if(s.objetivo === "reduzir_taxas") { scoreCore += 3; scoreScale += 2; }
+    if(s.objetivo === "escalar" || s.meta_unidade) scoreScale += 4;
+    if(s.objetivo === "atrair") { scoreCore += 2; scoreScale += 2; }
+
+    // Investimento / preferência (peso médio)
+    if(s.perfil_inv === "acessivel" || s.preferencia === "pontual") scoreStart += 3;
+    if(s.perfil_inv === "custo_beneficio" || s.preferencia === "mensal") scoreCore += 3;
+    if(s.perfil_inv === "crescimento" || s.preferencia === "estrutura") scoreScale += 3;
+
+    // Urgência (peso baixo)
+    if(s.urgencia === "alta") { scoreCore += 1; scoreScale += 1; }
+
+    // Ticket médio (peso médio)
+    if(s.ticket === "30plus") scoreScale += 2;
+    if(s.ticket === "15a30") scoreCore += 1;
+
+    // Concorrência (peso baixo)
+    if(s.concorrencia === "alta") scoreScale += 1;
+
+    // Resultado
+    const scores = {start:scoreStart, core:scoreCore, scale:scoreScale};
+    let escolhido = "core"; // Default âncora
+    
+    // Lógica de desempate: prioriza Core, depois Scale, depois Start
+    if(scores.scale > scores.core && scores.scale > scores.start) escolhido = "scale";
+    else if(scores.start > scores.core && scores.start > scores.scale) escolhido = "start";
+
+    pacoteRecomendado = pacoteLabel(escolhido);
+    const rec = pacoteRecomendado;
+    document.getElementById("rec_pacote").textContent = rec;
+    document.getElementById("rec_score").textContent = `Scores: Start=${scores.start} | Core=${scores.core} | Scale=${scores.scale}`;
+
+    // KPIs/pills
+    const kpis = [];
+    if(s.pct_plat === "40plus") kpis.push({t:"⚠️ Dependência alta de plataformas (40%+)", cls:"bad"});
+    else if(s.pct_plat === "20a40") kpis.push({t:"⚡ Dependência média de plataformas (20–40%)", cls:"warn"});
+    else if(s.pct_plat === "0a20") kpis.push({t:"✅ Baixa dependência de plataformas (0–20%)", cls:"good"});
+
+    if(s.presenca === "nao" || s.orgulho === "vergonha") kpis.push({t:"⚠️ Presença digital desalinhada", cls:"bad"});
+    if(s.presenca === "top") kpis.push({t:"✅ Presença digital profissional", cls:"good"});
+    if(s.meta_indep) kpis.push({t:"🎯 Meta: canal próprio / independência", cls:"good"});
+    if(s.meta_unidade) kpis.push({t:"🚀 Meta: escala / nova unidade", cls:"good"});
+    if(s.urgencia === "alta") kpis.push({t:"⏰ Urgência alta", cls:"warn"});
+    if(s.ticket === "30plus") kpis.push({t:"💰 Ticket médio alto (€30+)", cls:"good"});
+
+    const kpiDiv = document.getElementById("kpis");
+    kpiDiv.innerHTML = "";
+    kpis.forEach(k=>{
+      const el = document.createElement("span");
+      el.className = `pill ${k.cls}`;
+      el.textContent = k.t;
+      kpiDiv.appendChild(el);
+    });
+
+    // Diagnóstico curto
+    const diag = [];
+    if(s.presenca === "nao") diag.push("Hoje o digital não representa a qualidade do restaurante, o que trava percepção e conversão.");
+    if(s.plataformas === "diario" || s.pct_plat === "40plus") diag.push("Existe dependência relevante de plataformas, com impacto direto em margem e controlo da base de clientes.");
+    if(s.objetivo === "organizar") diag.push("O momento pede organização estratégica antes de acelerar investimento em performance.");
+    if(s.objetivo === "escalar" || s.meta_unidade) diag.push("Há intenção clara de escala, o que pede sistema e otimização contínua.");
+    if(diag.length === 0) diag.push("O restaurante tem base para crescer com um sistema consistente de presença + vendas.");
+
+    // Justificativa por pacote
+    let just = "";
+    if(escolhido==="start"){
+      just = "<b>Recomendação:</b> Começar pelo <b>Start</b> para organizar posicionamento, identidade e base digital com clareza — e então migrar para recorrência com segurança.";
+    } else if(escolhido==="core"){
+      just = "<b>Recomendação:</b> <b>Core</b> como serviço âncora para implementar um Sistema Digital de Vendas (presença + canal próprio) e trazer previsibilidade mensal.";
+    } else {
+      just = "<b>Recomendação:</b> <b>Scale</b> para acelerar crescimento com campanhas e otimização contínua, mantendo foco em margem, ticket e independência de terceiros.";
+    }
+
+    document.getElementById("rec_diag").innerHTML =
+      `<b>Diagnóstico:</b> ${diag.join(" ")}<br><br>${just}`;
+
+    // Próximos Passos
+    const passos = [];
+    if(escolhido === "start") passos.push("1. Enviar proposta Start com escopo de identidade + presença");
+    if(escolhido === "core") passos.push("1. Enviar proposta Core com Sistema Digital de Vendas");
+    if(escolhido === "scale") passos.push("1. Enviar proposta Scale com campanhas + otimização");
+    passos.push("2. Agendar call de alinhamento (15-20 min)");
+    passos.push("3. Preparar briefing de execução após assinatura");
+
+    const passosDiv = document.getElementById("passos_lista");
+    passosDiv.innerHTML = passos.map(p => `<div style="padding:6px 0; font-size:13px;">✓ ${p}</div>`).join("");
+    document.getElementById("proximos_passos").style.display = "block";
+
+    // Texto WhatsApp pronto
+    const nome = (s.nome||"o restaurante").trim();
+    const texto =
+`Olá! 👋
+
+Pelo que você me passou, ${nome} tem potencial claro de crescer no digital — mas hoje existe perda de margem/controlo (especialmente quando a venda depende de terceiros) e falta de um sistema previsível.
+
+Minha recomendação é: *${rec}*.
+
+Motivo: montar/ajustar a base e implementar um Sistema Digital de Vendas (presença + canal próprio), para você reduzir dependência e ganhar previsibilidade.
+
+Se fizer sentido, eu te envio a proposta simples com escopo e próximos passos. 📄
+
+Quando podemos alinhar? 📅`;
+    document.getElementById("texto_cliente").value = texto;
+
+    // Prompt interno
+    const payload = JSON.stringify(s, null, 2);
+    const prompt =
+`Atue como um Estrategista Comercial da Performa LAB (restauração em Portugal).
+Com base no briefing abaixo, entregue:
+1) Diagnóstico (3–5 linhas)
+2) Pacote indicado (Start/Core/Scale)
+3) Justificativa focada em crescimento e vendas (não técnica)
+4) Próximo passo recomendado (1)
+5) Frase de fecho (1 linha)
+
+Briefing (JSON):
+${payload}
+
+Recomendação gerada: ${rec}
+Scores: Start=${scores.start} | Core=${scores.core} | Scale=${scores.scale}`;
+    document.getElementById("prompt_interno").value = prompt;
+
+    // SALVAR DADOS PARA INTEGRAÇÃO
+    salvarClienteParaFluxo(escolhido);
+
+    save();
+  }
+
+  function salvarClienteParaFluxo(pacote){
+    const s = getState();
+    const clienteData = {
+      nome: s.nome,
+      email: s.email,
+      responsavel: s.cargo === "dono" ? "Proprietário" : (s.cargo === "gerente" ? "Gerente" : "Responsável"),
+      telefone: s.contacto,
+      setor: s.cozinha || "Restauração",
+      pacoteRecomendado: pacoteParaIntegracao(pacote),
+      objetivo: s.objetivo,
+      orcamento: s.perfil_inv,
+      local: s.local,
+      observacoes: s.notas || s.frustracao || "",
+      timestamp: Date.now()
+    };
+
+    localStorage.setItem(CLIENTE_KEY, JSON.stringify(clienteData));
+  }
+
+  function mostrarProximaAcao(){
+    if(!pacoteRecomendado){
+      alert("⚠️ Gere a recomendação primeiro clicando em 'Gerar Recomendação'");
+      return;
+    }
+    document.getElementById("modalProximaAcao").classList.add("show");
+  }
+
+  function fecharModal(){
+    document.getElementById("modalProximaAcao").classList.remove("show");
+    if(confirm("Deseja limpar o formulário para um novo diagnóstico?")){
+      limpar();
+    }
+  }
+
+  function exportar(tipo){
+    const s = getState();
+    const ts = new Date().toISOString().slice(0,19).replaceAll(":","-");
+    const nomeArquivo = (s.nome || "cliente").replaceAll(" ","_");
+    
+    if(tipo === "json"){
+      const blob = new Blob([JSON.stringify(s, null, 2)], {type:"application/json"});
+      download(blob, `performa-briefing-${nomeArquivo}-${ts}.json`);
+      return;
+    }
+    if(tipo === "csv"){
+      const rows = [];
+      rows.push(["campo","valor"]);
+      Object.keys(s).forEach(k=>{
+        rows.push([k, String(s[k]).replaceAll('"','""')]);
+      });
+      const csv = rows.map(r=>r.map(v=>`"${v}"`).join(",")).join("\n");
+      const blob = new Blob([csv], {type:"text/csv"});
+      download(blob, `performa-briefing-${nomeArquivo}-${ts}.csv`);
+      return;
+    }
+  }
+
+  function download(blob, filename){
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); }, 0);
+  }
+
+  function copiar(id){
+    const el = document.getElementById(id);
+    el.focus();
+    el.select();
+    document.execCommand("copy");
+    alert("✅ Copiado!");
+  }
+
+  function salvarHistorico(){
+    const s = getState();
+    if(!s.nome){
+      alert("⚠️ Preencha o nome do restaurante antes de salvar no histórico.");
+      return;
+    }
+    
+    const history = JSON.parse(localStorage.getItem(HISTORY_KEY) || "[]");
+    history.unshift(s);
+    localStorage.setItem(HISTORY_KEY, JSON.stringify(history.slice(0, 20)));
+    alert("✅ Salvo no histórico!");
+  }
+
+  function verHistorico(){
+    const history = JSON.parse(localStorage.getItem(HISTORY_KEY) || "[]");
+    if(history.length === 0){
+      alert("📋 Histórico vazio. Salve briefings para vê-los aqui.");
+      return;
+    }
+    
+    let msg = "📋 HISTÓRICO DE BRIEFINGS:\n\n";
+    history.forEach((item, idx) => {
+      const data = new Date(item._timestamp).toLocaleString('pt-PT');
+      msg += `${idx+1}. ${item.nome || "Sem nome"} (${item.local || "—"}) - ${data}\n`;
+    });
+    msg += "\n💡 Para carregar um briefing, use o console do navegador:\nlocalStorage.setItem('performa_briefing_v2', localStorage.getItem('performa_briefing_history'))";
+    alert(msg);
+  }
+
+  // Autosave em qualquer mudança
+  document.addEventListener("input", save);
+  document.addEventListener("change", save);
+  load();
+</script>
+</body>
+</html>

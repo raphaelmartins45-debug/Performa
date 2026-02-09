@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="pt-pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>CRM | Performa LAB</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { background-color: #f8fafc; font-family: 'Inter', sans-serif; }
+        .bg-performa { background-color: #1E3A8A; }
+        .section-card { background: white; border-radius: 16px; padding: 24px; margin-bottom: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        label { display: block; font-weight: 600; color: #374151; margin-bottom: 8px; font-size: 14px; }
+        input, select, textarea { width: 100%; padding: 12px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px; }
+        input:focus, select:focus, textarea:focus { outline: none; border-color: #1E3A8A; }
+        .btn-primary { background-color: #1E3A8A; color: white; padding: 12px 24px; border-radius: 8px; font-weight: 600; border: none; cursor: pointer; font-size: 14px; }
+        .btn-secondary { background-color: #6b7280; color: white; padding: 8px 16px; border-radius: 6px; font-weight: 500; border: none; cursor: pointer; font-size: 12px; margin-right: 8px; }
+        .btn-danger { background-color: #dc2626; color: white; padding: 8px 16px; border-radius: 6px; font-weight: 500; border: none; cursor: pointer; font-size: 12px; }
+        .btn-primary:active, .btn-secondary:active, .btn-danger:active { transform: scale(0.98); }
+        .badge { display: inline-block; padding: 4px 12px; border-radius: 12px; font-size: 11px; font-weight: 600; }
+        .badge-lead { background: #dbeafe; color: #1e40af; }
+        .badge-proposta { background: #fef3c7; color: #92400e; }
+        .badge-negociacao { background: #fce7f3; color: #9f1239; }
+        .badge-fechado { background: #d1fae5; color: #065f46; }
+        .badge-perdido { background: #fee2e2; color: #991b1b; }
+        .cliente-card { background: white; border: 1px solid #e5e7eb; border-radius: 12px; padding: 16px; margin-bottom: 12px; }
+        .cliente-card:hover { box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .hidden { display: none; }
+        .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 1000; }
+        .modal-content { background: white; border-radius: 16px; padding: 24px; max-width: 500px; width: 90%; max-height: 80vh; overflow-y: auto; }
+        .stats-card { background: linear-gradient(135deg, #1E3A8A 0%, #3b82f6 100%); color: white; border-radius: 12px; padding: 20px; text-align: center; }
+        .stats-number { font-size: 32px; font-weight: bold; }
+        .stats-label { font-size: 12px; opacity: 0.9; margin-top: 4px; }
+    </style>
+</head>
+<body>
+
+    <!-- Header -->
+    <header class="bg-performa text-white py-6 px-6 shadow-lg">
+        <div class="max-w-6xl mx-auto flex items-center justify-between">
+            <a href="hub-performa.html" class="text-white">
+                <i class="fas fa-arrow-left text-xl"></i>
+            </a>
+            <h1 class="text-xl font-bold">CRM - GESTÃO DE CLIENTES</h1>
+            <button onclick="abrirModalNovoCliente()" class="text-white">
+                <i class="fas fa-plus-circle text-2xl"></i>
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container mx-auto px-6 py-8 max-w-6xl">
+
+        <!-- Estatísticas -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+            <div class="stats-card">
+                <div class="stats-number" id="totalLeads">0</div>
+                <div class="stats-label">LEADS</div>
+            </div>
+            <div class="stats-card" style="background: linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%);">
+                <div class="stats-number" id="totalPropostas">0</div>
+                <div class="stats-label">PROPOSTAS</div>
+            </div>
+            <div class="stats-card" style="background: linear-gradient(135deg, #10b981 0%, #34d399 100%);">
+                <div class="stats-number" id="totalFechados">0</div>
+                <div class="stats-label">FECHADOS</div>
+            </div>
+            <div class="stats-card" style="background: linear-gradient(135deg, #6b7280 0%, #9ca3af 100%);">
+                <div class="stats-number" id="valorTotal">€0</div>
+                <div class="stats-label">VALOR TOTAL</div>
+            </div>
+        </div>
+
+        <!-- Filtros -->
+        <div class="section-card">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-lg font-bold text-gray-800">📊 Pipeline de Vendas</h2>
+                <select id="filtroStatus" onchange="filtrarClientes()" class="border border-gray-300 rounded-lg px-3 py-2 text-sm">
+                    <option value="todos">Todos os Status</option>
+                    <option value="lead">Lead</option>
+                    <option value="proposta">Proposta Enviada</option>
+                    <option value="negociacao">Em Negociação</option>
+                    <option value="fechado">Fechado</option>
+                    <option value="perdido">Perdido</option>
+                </select>
+            </div>
+
+            <!-- Lista de Clientes -->
+            <div id="listaClientes">
+                <p class="text-gray-400 text-center py-8">Nenhum cliente cadastrado. Clique no + para adicionar.</p>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Modal Novo Cliente -->
+    <div id="modalNovoCliente" class="modal hidden">
+        <div class="modal-content">
+            <div class="flex items-center justify-between mb-6">
+                <h2 class="text-xl font-bold text-gray-800">➕ Novo Cliente</h2>
+                <button onclick="fecharModal()" class="text-gray-400 text-2xl">&times;</button>
+            </div>
+
+            <form id="formNovoCliente" onsubmit="salvarCliente(event)">
+                <div class="mb-4">
+                    <label>Nome/Empresa *</label>
+                    <input type="text" id="nomeCliente" required>
+                </div>
+                <div class="mb-4">
+                    <label>Email *</label>
+                    <input type="email" id="emailCliente" required>
+                </div>
+                <div class="mb-4">
+                    <label>Telefone</label>
+                    <input type="tel" id="telefoneCliente">
+                </div>
+                <div class="mb-4">
+                    <label>Status *</label>
+                    <select id="statusCliente" required>
+                        <option value="lead">Lead</option>
+                        <option value="proposta">Proposta Enviada</option>
+                        <option value="negociacao">Em Negociação</option>
+                        <option value="fechado">Fechado</option>
+                        <option value="perdido">Perdido</option>
+                    </select>
+                </div>
+                <div class="mb-4">
+                    <label>Pacote de Interesse</label>
+                    <select id="pacoteCliente">
+                        <option value="">Não definido</option>
+                        <option value="start">Performa START</option>
+                        <option value="core">Performa CORE</option>
+                        <option value="scale">Performa SCALE</option>
+                        <option value="especial">Projeto Especial</option>
+                    </select>
+                </div>
+                <div class="mb-4">
+                    <label>Valor Estimado (€)</label>
+                    <input type="number" id="valorCliente" step="0.01" placeholder="Ex: 697">
+                </div>
+                <div class="mb-4">
+                    <label>Observações</label>
+                    <textarea id="observacoesCliente" rows="3" placeholder="Anotações sobre o cliente..."></textarea>
+                </div>
+
+                <button type="submit" class="btn-primary w-full">
+                    <i class="fas fa-save mr-2"></i> SALVAR CLIENTE
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Editar Cliente -->
+    <div id="modalEditarCliente" class="modal hidden">
+        <div class="modal-content">
+            <div class="flex items-center justify-between mb-6">
+                <h2 class="text-xl font-bold text-gray-800">✏️ Editar Cliente</h2>
+                <button onclick="fecharModalEditar()" class="text-gray-400 text-2xl">&times;</button>
+            </div>
+
+            <form id="formEditarCliente" onsubmit="atualizarCliente(event)">
+                <input type="hidden" id="editarClienteId">
+                <div class="mb-4">
+                    <label>Nome/Empresa *</label>
+                    <input type="text" id="editarNome" required>
+                </div>
+                <div class="mb-4">
+                    <label>Email *</label>
+                    <input type="email" id="editarEmail" required>
+                </div>
+                <div class="mb-4">
+                    <label>Telefone</label>
+                    <input type="tel" id="editarTelefone">
+                </div>
+                <div class="mb-4">
+                    <label>Status *</label>
+                    <select id="editarStatus" required>
+                        <option value="lead">Lead</option>
+                        <option value="proposta">Proposta Enviada</option>
+                        <option value="negociacao">Em Negociação</option>
+                        <option value="fechado">Fechado</option>
+                        <option value="perdido">Perdido</option>
+                    </select>
+                </div>
+                <div class="mb-4">
+                    <label>Pacote de Interesse</label>
+                    <select id="editarPacote">
+                        <option value="">Não definido</option>
+                        <option value="start">Performa START</option>
+                        <option value="core">Performa CORE</option>
+                        <option value="scale">Performa SCALE</option>
+                        <option value="especial">Projeto Especial</option>
+                    </select>
+                </div>
+                <div class="mb-4">
+                    <label>Valor Estimado (€)</label>
+                    <input type="number" id="editarValor" step="0.01">
+                </div>
+                <div class="mb-4">
+                    <label>Observações</label>
+                    <textarea id="editarObservacoes" rows="3"></textarea>
+                </div>
+
+                <button type="submit" class="btn-primary w-full">
+                    <i class="fas fa-save mr-2"></i> ATUALIZAR CLIENTE
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        let clientes = JSON.parse(localStorage.getItem('crm_performa')) || [];
+
+        function abrirModalNovoCliente() {
+            document.getElementById('modalNovoCliente').classList.remove('hidden');
+        }
+
+        function fecharModal() {
+            document.getElementById('modalNovoCliente').classList.add('hidden');
+            document.getElementById('formNovoCliente').reset();
+        }
+
+        function fecharModalEditar() {
+            document.getElementById('modalEditarCliente').classList.add('hidden');
+        }
+
+        function salvarCliente(e) {
+            e.preventDefault();
+
+            const cliente = {
+                id: Date.now(),
+                nome: document.getElementById('nomeCliente').value,
+                email: document.getElementById('emailCliente').value,
+                telefone: document.getElementById('telefoneCliente').value,
+                status: document.getElementById('statusCliente').value,
+                pacote: document.getElementById('pacoteCliente').value,
+                valor: parseFloat(document.getElementById('valorCliente').value) || 0,
+                observacoes: document.getElementById('observacoesCliente').value,
+                dataCriacao: new Date().toLocaleDateString('pt-PT')
+            };
+
+            clientes.push(cliente);
+            localStorage.setItem('crm_performa', JSON.stringify(clientes));
+            
+            fecharModal();
+            renderizarClientes();
+            atualizarEstatisticas();
+        }
+
+        function editarCliente(id) {
+            const cliente = clientes.find(c => c.id === id);
+            if (!cliente) return;
+
+            document.getElementById('editarClienteId').value = cliente.id;
+            document.getElementById('editarNome').value = cliente.nome;
+            document.getElementById('editarEmail').value = cliente.email;
+            document.getElementById('editarTelefone').value = cliente.telefone;
+            document.getElementById('editarStatus').value = cliente.status;
+            document.getElementById('editarPacote').value = cliente.pacote;
+            document.getElementById('editarValor').value = cliente.valor;
+            document.getElementById('editarObservacoes').value = cliente.observacoes;
+
+            document.getElementById('modalEditarCliente').classList.remove('hidden');
+        }
+
+        function atualizarCliente(e) {
+            e.preventDefault();
+
+            const id = parseInt(document.getElementById('editarClienteId').value);
+            const index = clientes.findIndex(c => c.id === id);
+
+            if (index !== -1) {
+                clientes[index] = {
+                    ...clientes[index],
+                    nome: document.getElementById('editarNome').value,
+                    email: document.getElementById('editarEmail').value,
+                    telefone: document.getElementById('editarTelefone').value,
+                    status: document.getElementById('editarStatus').value,
+                    pacote: document.getElementById('editarPacote').value,
+                    valor: parseFloat(document.getElementById('editarValor').value) || 0,
+                    observacoes: document.getElementById('editarObservacoes').value
+                };
+
+                localStorage.setItem('crm_performa', JSON.stringify(clientes));
+                fecharModalEditar();
+                renderizarClientes();
+                atualizarEstatisticas();
+            }
+        }
+
+        function excluirCliente(id) {
+            if (confirm('Tem certeza que deseja excluir este cliente?')) {
+                clientes = clientes.filter(c => c.id !== id);
+                localStorage.setItem('crm_performa', JSON.stringify(clientes));
+                renderizarClientes();
+                atualizarEstatisticas();
+            }
+        }
+
+        function getBadgeClass(status) {
+            const badges = {
+                'lead': 'badge-lead',
+                'proposta': 'badge-proposta',
+                'negociacao': 'badge-negociacao',
+                'fechado': 'badge-fechado',
+                'perdido': 'badge-perdido'
+            };
+            return badges[status] || 'badge-lead';
+        }
+
+        function getStatusTexto(status) {
+            const textos = {
+                'lead': 'Lead',
+                'proposta': 'Proposta Enviada',
+                'negociacao': 'Em Negociação',
+                'fechado': 'Fechado',
+                'perdido': 'Perdido'
+            };
+            return textos[status] || status;
+        }
+
+        function filtrarClientes() {
+            const filtro = document.getElementById('filtroStatus').value;
+            renderizarClientes(filtro);
+        }
+
+        function renderizarClientes(filtro = 'todos') {
+            const lista = document.getElementById('listaClientes');
+            const clientesFiltrados = filtro === 'todos' ? clientes : clientes.filter(c => c.status === filtro);
+
+            if (clientesFiltrados.length === 0) {
+                lista.innerHTML = '<p class="text-gray-400 text-center py-8">Nenhum cliente encontrado.</p>';
+                return;
+            }
+
+            lista.innerHTML = clientesFiltrados.map(cliente => `
+                <div class="cliente-card">
+                    <div class="flex items-start justify-between">
+                        <div class="flex-grow">
+                            <div class="flex items-center mb-2">
+                                <h3 class="font-bold text-gray-800 text-lg mr-3">${cliente.nome}</h3>
+                                <span class="badge ${getBadgeClass(cliente.status)}">${getStatusTexto(cliente.status)}</span>
+                            </div>
+                            <p class="text-sm text-gray-600 mb-1"><i class="fas fa-envelope mr-2"></i>${cliente.email}</p>
+                            ${cliente.telefone ? `<p class="text-sm text-gray-600 mb-1"><i class="fas fa-phone mr-2"></i>${cliente.telefone}</p>` : ''}
+                            ${cliente.pacote ? `<p class="text-sm text-gray-600 mb-1"><i class="fas fa-box mr-2"></i>${cliente.pacote.toUpperCase()}</p>` : ''}
+                            ${cliente.valor > 0 ? `<p class="text-sm font-semibold text-green-600 mb-1"><i class="fas fa-euro-sign mr-2"></i>€${cliente.valor.toFixed(2)}/mês</p>` : ''}
+                            ${cliente.observacoes ? `<p class="text-xs text-gray-500 mt-2 italic">${cliente.observacoes}</p>` : ''}
+                            <p class="text-xs text-gray-400 mt-2">Criado em: ${cliente.dataCriacao}</p>
+                        </div>
+                        <div class="flex flex-col gap-2">
+                            <button onclick="editarCliente(${cliente.id})" class="btn-secondary">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button onclick="excluirCliente(${cliente.id})" class="btn-danger">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function atualizarEstatisticas() {
+            const totalLeads = clientes.filter(c => c.status === 'lead').length;
+            const totalPropostas = clientes.filter(c => c.status === 'proposta' || c.status === 'negociacao').length;
+            const totalFechados = clientes.filter(c => c.status === 'fechado').length;
+            const valorTotal = clientes.filter(c => c.status === 'fechado').reduce((sum, c) => sum + c.valor, 0);
+
+            document.getElementById('totalLeads').textContent = totalLeads;
+            document.getElementById('totalPropostas').textContent = totalPropostas;
+            document.getElementById('totalFechados').textContent = totalFechados;
+            document.getElementById('valorTotal').textContent = `€${valorTotal.toFixed(0)}`;
+        }
+
+        // Inicializar
+        window.addEventListener('load', () => {
+            renderizarClientes();
+            atualizarEstatisticas();
+        });
+    </script>
+
+</body>
+</html>

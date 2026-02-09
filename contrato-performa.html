@@ -1,0 +1,746 @@
+<!doctype html>
+<html lang="pt-PT">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Performa LAB — Gerador de Contrato v6</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <style>
+    :root{
+      --bg:#0b0f19; --card:#121a2a; --muted:#8ea0c1; --text:#eaf0ff;
+      --accent:#FFB84D; --accent2:#1E3A8A; --danger:#ff6a8b; --ok:#34d399;
+      --border:rgba(255,255,255,.10);
+      --shadow: 0 12px 30px rgba(0,0,0,.35);
+      --radius: 18px;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial;
+      background: radial-gradient(1200px 800px at 10% 0%, rgba(255,184,77,.12), transparent 60%),
+                  radial-gradient(900px 700px at 90% 10%, rgba(30,58,138,.12), transparent 55%),
+                  var(--bg);
+      color:var(--text);
+      padding:20px;
+    }
+    .wrap{max-width:900px; margin:0 auto; padding:20px; background:var(--card); border-radius:var(--radius); box-shadow:var(--shadow); border:1px solid var(--border);}
+    
+    header{
+      display:flex; flex-wrap:wrap; gap:14px; align-items:center; justify-content:space-between;
+      margin-bottom:24px; padding-bottom:16px; border-bottom:1px solid var(--border);
+    }
+    .brand{display:flex; gap:12px; align-items:center;}
+    .logo{
+      width:50px; height:50px; border-radius:14px;
+      background:url('https://cdn.abacus.ai/images/489d8ed5-8803-4d48-981f-2f5a6b8ef9d3.png') center/contain no-repeat;
+      box-shadow: var(--shadow);
+    }
+    h1{font-size:20px; margin:0; color:var(--accent);}
+    .sub{color:var(--muted); font-size:13px; margin-top:2px}
+
+    .section{margin-bottom:24px;}
+    .section h2{
+      font-size:14px; margin:0 0 12px; letter-spacing:.3px; text-transform:uppercase;
+      color:rgba(234,240,255,.92); border-left:3px solid var(--accent); padding-left:10px;
+    }
+
+    label{display:block; font-size:13px; color:rgba(234,240,255,.88); margin:10px 0 6px; font-weight:600;}
+    label.required::after{content:" *"; color:var(--danger);}
+    
+    input[type="text"], input[type="tel"], input[type="email"], input[type="number"], input[type="date"], textarea, select{
+      width:100%; background:rgba(255,255,255,.05); border:1px solid var(--border);
+      color:var(--text); padding:12px; border-radius:14px; outline:none; font-size:14px; transition:.2s;
+    }
+    input:focus, select:focus, textarea:focus{
+      border-color:var(--accent); box-shadow:0 0 0 3px rgba(255,184,77,.1);
+    }
+    textarea{min-height:80px; resize:vertical;}
+
+    .row{display:grid; grid-template-columns:1fr; gap:12px;}
+    @media(min-width:700px){ .row.two{grid-template-columns:1fr 1fr;} .row.three{grid-template-columns:1fr 1fr 1fr;} }
+
+    .price-input{display:flex; gap:8px; align-items:center;}
+    .price-input input{flex:1;}
+    .price-input span{color:var(--muted); font-size:13px;}
+
+    .summary{
+      background:rgba(255,184,77,.08); border:1px solid rgba(255,184,77,.25);
+      border-radius:14px; padding:16px; margin-top:16px;
+    }
+    .summary h3{margin:0 0 10px; font-size:15px; color:var(--accent);}
+    .summary-line{
+      display:flex; justify-content:space-between; padding:6px 0;
+      border-bottom:1px solid var(--border); font-size:14px;
+    }
+    .summary-line:last-child{border:none; font-weight:700; font-size:16px; color:var(--accent);}
+
+    button{
+      border:1px solid var(--border); background:rgba(255,255,255,.06);
+      color:var(--text); padding:12px 18px; border-radius:14px; font-weight:600;
+      cursor:pointer; backdrop-filter:blur(10px); font-size:14px; transition:.2s;
+      width:100%; margin-top:10px;
+    }
+    button.primary{
+      background:linear-gradient(135deg, rgba(255,184,77,.25), rgba(30,58,138,.25));
+      border-color:rgba(255,184,77,.45);
+    }
+    button:hover{transform:translateY(-1px); box-shadow:0 4px 12px rgba(0,0,0,.2);}
+    button:active{transform:translateY(1px);}
+
+    .hidden{display:none;}
+    .info-box{
+      background:rgba(30,58,138,.1); border:1px solid rgba(30,58,138,.3);
+      border-radius:14px; padding:12px; margin-top:8px; font-size:12px; color:var(--muted);
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div class="brand">
+        <div class="logo" aria-hidden="true"></div>
+        <div>
+          <h1>Gerador de Contrato v6</h1>
+          <div class="sub">Sistema Completo de Pagamentos</div>
+        </div>
+      </div>
+    </header>
+
+    <form id="form">
+      <!-- DADOS DA CONTRATADA (PERFORMA LAB) -->
+      <div class="section">
+        <h2>🏢 Contratada (Performa LAB)</h2>
+        <label class="required">Nome/Razão Social</label>
+        <input id="contratada_nome" type="text" value="Performa LAB" required />
+        
+        <div class="row two">
+          <div>
+            <label class="required">NIF</label>
+            <input id="contratada_nif" type="text" placeholder="Ex.: 123456789" required />
+          </div>
+          <div>
+            <label class="required">Email</label>
+            <input id="contratada_email" type="email" placeholder="contato@performalab.pt" required />
+          </div>
+        </div>
+
+        <label class="required">Morada</label>
+        <input id="contratada_morada" type="text" placeholder="Rua, número" required />
+        
+        <div class="row three">
+          <div>
+            <label class="required">Código Postal</label>
+            <input id="contratada_cp" type="text" placeholder="0000-000" required />
+          </div>
+          <div>
+            <label class="required">Localidade</label>
+            <input id="contratada_local" type="text" required />
+          </div>
+          <div>
+            <label>Telefone</label>
+            <input id="contratada_tel" type="tel" />
+          </div>
+        </div>
+
+        <label>Representante Legal</label>
+        <input id="contratada_rep" type="text" value="Michelle Raphaela Santos de Borba" />
+        <div class="info-box">
+          💡 Representada por Michelle Raphaela Santos de Borba na qualidade de Gestora Comercial
+        </div>
+      </div>
+
+      <!-- DADOS DO CONTRATANTE (CLIENTE) -->
+      <div class="section">
+        <h2>👤 Contratante (Cliente)</h2>
+        <label class="required">Nome/Razão Social</label>
+        <input id="contratante_nome" type="text" required />
+        
+        <div class="row two">
+          <div>
+            <label class="required">NIF</label>
+            <input id="contratante_nif" type="text" required />
+          </div>
+          <div>
+            <label class="required">Email</label>
+            <input id="contratante_email" type="email" required />
+          </div>
+        </div>
+
+        <label class="required">Morada</label>
+        <input id="contratante_morada" type="text" required />
+        
+        <div class="row three">
+          <div>
+            <label class="required">Código Postal</label>
+            <input id="contratante_cp" type="text" placeholder="0000-000" required />
+          </div>
+          <div>
+            <label class="required">Localidade</label>
+            <input id="contratante_local" type="text" required />
+          </div>
+          <div>
+            <label>Telefone</label>
+            <input id="contratante_tel" type="tel" />
+          </div>
+        </div>
+
+        <label>Representante/Responsável</label>
+        <input id="contratante_rep" type="text" placeholder="Nome do signatário" />
+      </div>
+
+      <!-- OBJETO DO CONTRATO -->
+      <div class="section">
+        <h2>📋 Objeto do Contrato</h2>
+        
+        <label class="required">Tipo de Serviço</label>
+        <select id="tipo_servico" required onchange="calcularValor()">
+          <option value="">— selecionar —</option>
+          <option value="start">Performa Start</option>
+          <option value="core">Performa Core</option>
+          <option value="scale">Performa Scale</option>
+          <option value="personalizado">Serviço Personalizado</option>
+          <option value="projeto">Projeto Especial</option>
+        </select>
+
+        <label>Descrição dos Serviços</label>
+        <textarea id="desc_servicos" placeholder="Detalhe os serviços contratados..."></textarea>
+      </div>
+
+      <!-- VALORES E PAGAMENTO -->
+      <div class="section">
+        <h2>💰 Valores e Condições de Pagamento</h2>
+        
+        <label class="required">Valor Base Mensal (€)</label>
+        <div class="price-input">
+          <span>€</span>
+          <input id="valor_base" type="number" min="0" step="0.01" placeholder="Ex.: 497" required onchange="calcularValor()" />
+          <span>/mês</span>
+        </div>
+
+        <label class="required">Periodicidade de Pagamento</label>
+        <select id="periodicidade" required onchange="calcularValor()">
+          <option value="mensal">Mensal (sem desconto)</option>
+          <option value="trimestral">Trimestral (desconto de 10%)</option>
+          <option value="semestral">Semestral (desconto de 15%)</option>
+          <option value="anual">Anual (desconto de 20%)</option>
+        </select>
+
+        <div class="summary">
+          <h3>Resumo Financeiro</h3>
+          <div class="summary-line">
+            <span>Valor Base:</span>
+            <span id="sum_base">€0,00</span>
+          </div>
+          <div class="summary-line" id="line_desconto" style="display:none;">
+            <span id="label_desconto">Desconto:</span>
+            <span id="sum_desconto">€0,00</span>
+          </div>
+          <div class="summary-line">
+            <span>Valor por Período:</span>
+            <span id="sum_periodo">€0,00</span>
+          </div>
+          <div class="summary-line">
+            <span>TOTAL (IVA incluído):</span>
+            <span id="sum_total">€0,00</span>
+          </div>
+        </div>
+
+        <div class="info-box">
+          ℹ️ O IVA à taxa legal em vigor está incluído nos valores apresentados
+        </div>
+
+        <label class="required">Dia de Vencimento</label>
+        <select id="dia_vencimento" required>
+          <option value="">— selecionar —</option>
+          <option value="1">Dia 1 de cada mês/período</option>
+          <option value="5">Dia 5 de cada mês/período</option>
+          <option value="10">Dia 10 de cada mês/período</option>
+          <option value="15">Dia 15 de cada mês/período</option>
+          <option value="20">Dia 20 de cada mês/período</option>
+          <option value="25">Dia 25 de cada mês/período</option>
+          <option value="30">Último dia do mês/período</option>
+        </select>
+
+        <label class="required">Forma de Pagamento</label>
+        <select id="forma_pagamento" required>
+          <option value="">— selecionar —</option>
+          <option value="transferencia">Transferência Bancária</option>
+          <option value="mbway">MB Way</option>
+          <option value="multibanco">Multibanco (Referência)</option>
+          <option value="debito">Débito Direto</option>
+        </select>
+
+        <label>Dados Bancários (IBAN)</label>
+        <input id="iban" type="text" placeholder="PT50 0000 0000 0000 0000 0000 0" />
+        <div class="info-box">
+          💡 Preencha com o IBAN da Performa LAB para constar no contrato
+        </div>
+      </div>
+
+      <!-- PRAZO E VIGÊNCIA -->
+      <div class="section">
+        <h2>📅 Prazo e Vigência</h2>
+        
+        <div class="row two">
+          <div>
+            <label class="required">Data de Início</label>
+            <input id="data_inicio" type="date" required />
+          </div>
+          <div>
+            <label class="required">Duração Inicial</label>
+            <select id="duracao" required>
+              <option value="3">3 meses</option>
+              <option value="6">6 meses</option>
+              <option value="12" selected>12 meses</option>
+              <option value="24">24 meses</option>
+              <option value="indeterminado">Indeterminado</option>
+            </select>
+          </div>
+        </div>
+
+        <label>Renovação Automática</label>
+        <select id="renovacao">
+          <option value="sim">Sim, renovação automática</option>
+          <option value="nao">Não, término ao final do prazo</option>
+        </select>
+      </div>
+
+      <!-- OBSERVAÇÕES -->
+      <div class="section">
+        <h2>📝 Observações Adicionais</h2>
+        <textarea id="observacoes" placeholder="Condições especiais, cláusulas adicionais, etc."></textarea>
+      </div>
+
+      <button type="button" class="primary" onclick="gerarContrato()">📄 Gerar Contrato em PDF</button>
+    </form>
+  </div>
+
+<script>
+  const KEY_CONTRATO = "performa_contrato_v6";
+
+  // AUTOSAVE
+  function salvarRascunho() {
+    const campos = [
+      'contratada_nome', 'contratada_nif', 'contratada_email', 'contratada_morada', 
+      'contratada_cp', 'contratada_local', 'contratada_tel', 'contratada_rep',
+      'contratante_nome', 'contratante_nif', 'contratante_email', 'contratante_morada',
+      'contratante_cp', 'contratante_local', 'contratante_tel', 'contratante_rep',
+      'tipo_servico', 'desc_servicos', 'valor_base', 'periodicidade', 'dia_vencimento',
+      'forma_pagamento', 'iban', 'data_inicio', 'duracao', 'renovacao', 'observacoes'
+    ];
+    
+    const state = {};
+    campos.forEach(id => {
+      const el = document.getElementById(id);
+      if(el) state[id] = el.value;
+    });
+    
+    localStorage.setItem(KEY_CONTRATO, JSON.stringify(state));
+  }
+
+  function carregarRascunho() {
+    const raw = localStorage.getItem(KEY_CONTRATO);
+    if(!raw) return;
+    
+    try {
+      const state = JSON.parse(raw);
+      Object.keys(state).forEach(id => {
+        const el = document.getElementById(id);
+        if(el) el.value = state[id];
+      });
+      
+      calcularValor();
+    } catch(e) {
+      console.error('Erro ao carregar rascunho:', e);
+    }
+  }
+
+  window.addEventListener('DOMContentLoaded', () => {
+    carregarRascunho();
+    
+    // Data de início padrão: hoje
+    const hoje = new Date().toISOString().split('T')[0];
+    if(!document.getElementById('data_inicio').value) {
+      document.getElementById('data_inicio').value = hoje;
+    }
+  });
+
+  document.addEventListener('input', salvarRascunho);
+  document.addEventListener('change', salvarRascunho);
+
+  function calcularValor() {
+    const tipo = document.getElementById('tipo_servico').value;
+    const valoresBase = {
+      start: 497,
+      core: 797,
+      scale: 1297
+    };
+
+    if(valoresBase[tipo]) {
+      document.getElementById('valor_base').value = valoresBase[tipo];
+    }
+
+    const base = parseFloat(document.getElementById('valor_base').value) || 0;
+    const periodicidade = document.getElementById('periodicidade').value;
+
+    const descontos = {
+      mensal: { mult: 1, desc: 0 },
+      trimestral: { mult: 3, desc: 0.10 },
+      semestral: { mult: 6, desc: 0.15 },
+      anual: { mult: 12, desc: 0.20 }
+    };
+
+    const config = descontos[periodicidade] || descontos.mensal;
+    const valorPeriodo = base * config.mult;
+    const valorDesconto = valorPeriodo * config.desc;
+    const total = valorPeriodo - valorDesconto;
+
+    document.getElementById('sum_base').textContent = `€${base.toFixed(2)}/mês`;
+    document.getElementById('sum_periodo').textContent = `€${valorPeriodo.toFixed(2)}`;
+
+    if(config.desc > 0) {
+      document.getElementById('line_desconto').style.display = 'flex';
+      document.getElementById('label_desconto').textContent = `Desconto (${(config.desc*100).toFixed(0)}%):`;
+      document.getElementById('sum_desconto').textContent = `-€${valorDesconto.toFixed(2)}`;
+    } else {
+      document.getElementById('line_desconto').style.display = 'none';
+    }
+
+    document.getElementById('sum_total').textContent = `€${total.toFixed(2)}`;
+  }
+
+  function gerarContrato() {
+    const { jsPDF } = window.jspdf;
+
+    // Validação
+    const required = [
+      'contratada_nome', 'contratada_nif', 'contratada_email', 'contratada_morada',
+      'contratada_cp', 'contratada_local',
+      'contratante_nome', 'contratante_nif', 'contratante_email', 'contratante_morada',
+      'contratante_cp', 'contratante_local',
+      'tipo_servico', 'valor_base', 'periodicidade', 'dia_vencimento', 'forma_pagamento', 'data_inicio', 'duracao'
+    ];
+
+    for(let id of required) {
+      const el = document.getElementById(id);
+      if(!el || !el.value.trim()) {
+        alert(`⚠️ Campo obrigatório não preenchido: ${el?.previousElementSibling?.textContent || id}`);
+        el?.focus();
+        return;
+      }
+    }
+
+    const doc = new jsPDF();
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const pageHeight = doc.internal.pageSize.getHeight();
+    const margin = 20;
+    let y = 20;
+
+    // HEADER
+    doc.setFontSize(18);
+    doc.setTextColor(30, 58, 138);
+    doc.setFont('helvetica', 'bold');
+    doc.text('CONTRATO DE PRESTAÇÃO DE SERVIÇOS', pageWidth / 2, y, { align: 'center' });
+    y += 10;
+
+    doc.setFontSize(10);
+    doc.setTextColor(100, 100, 100);
+    doc.setFont('helvetica', 'normal');
+    doc.text('PERFORMA LAB — Marketing Digital para Restaurantes', pageWidth / 2, y, { align: 'center' });
+    y += 15;
+
+    // LINHA
+    doc.setDrawColor(255, 184, 77);
+    doc.setLineWidth(0.5);
+    doc.line(margin, y, pageWidth - margin, y);
+    y += 10;
+
+    // CONTRATADA
+    doc.setFontSize(11);
+    doc.setTextColor(30, 58, 138);
+    doc.setFont('helvetica', 'bold');
+    doc.text('CONTRATADA:', margin, y);
+    y += 6;
+
+    doc.setFontSize(9);
+    doc.setTextColor(0, 0, 0);
+    doc.setFont('helvetica', 'normal');
+    
+    const contratadaNome = document.getElementById('contratada_nome').value;
+    const contratadaNif = document.getElementById('contratada_nif').value;
+    const contratadaEmail = document.getElementById('contratada_email').value;
+    const contratadaMorada = document.getElementById('contratada_morada').value;
+    const contratadaCp = document.getElementById('contratada_cp').value;
+    const contratadaLocal = document.getElementById('contratada_local').value;
+    const contratadaTel = document.getElementById('contratada_tel').value;
+    const contratadaRep = document.getElementById('contratada_rep').value;
+
+    doc.text(`${contratadaNome}, NIF ${contratadaNif}`, margin, y);
+    y += 5;
+    doc.text(`representada por ${contratadaRep} na qualidade de Gestora Comercial`, margin, y);
+    y += 5;
+    doc.text(`${contratadaMorada}, ${contratadaCp} ${contratadaLocal}`, margin, y);
+    y += 5;
+    doc.text(`Email: ${contratadaEmail}${contratadaTel ? ' | Tel: ' + contratadaTel : ''}`, margin, y);
+    y += 10;
+
+    // CONTRATANTE
+    doc.setFontSize(11);
+    doc.setTextColor(30, 58, 138);
+    doc.setFont('helvetica', 'bold');
+    doc.text('CONTRATANTE:', margin, y);
+    y += 6;
+
+    doc.setFontSize(9);
+    doc.setTextColor(0, 0, 0);
+    doc.setFont('helvetica', 'normal');
+
+    const contratanteNome = document.getElementById('contratante_nome').value;
+    const contratanteNif = document.getElementById('contratante_nif').value;
+    const contratanteEmail = document.getElementById('contratante_email').value;
+    const contratanteMorada = document.getElementById('contratante_morada').value;
+    const contratanteCp = document.getElementById('contratante_cp').value;
+    const contratanteLocal = document.getElementById('contratante_local').value;
+    const contratanteTel = document.getElementById('contratante_tel').value;
+    const contratanteRep = document.getElementById('contratante_rep').value;
+
+    doc.text(`${contratanteNome}, NIF ${contratanteNif}`, margin, y);
+    y += 5;
+    if(contratanteRep) {
+      doc.text(`representado(a) por ${contratanteRep}`, margin, y);
+      y += 5;
+    }
+    doc.text(`${contratanteMorada}, ${contratanteCp} ${contratanteLocal}`, margin, y);
+    y += 5;
+    doc.text(`Email: ${contratanteEmail}${contratanteTel ? ' | Tel: ' + contratanteTel : ''}`, margin, y);
+    y += 10;
+
+    // CLÁUSULAS
+    doc.setFontSize(11);
+    doc.setTextColor(30, 58, 138);
+    doc.setFont('helvetica', 'bold');
+    doc.text('CLÁUSULA 1.ª — OBJETO', margin, y);
+    y += 6;
+
+    doc.setFontSize(9);
+    doc.setTextColor(0, 0, 0);
+    doc.setFont('helvetica', 'normal');
+
+    const tipoServico = document.getElementById('tipo_servico').value;
+    const nomesPacote = {
+      start: 'Performa Start',
+      core: 'Performa Core',
+      scale: 'Performa Scale',
+      personalizado: 'Serviço Personalizado',
+      projeto: 'Projeto Especial'
+    };
+
+    const textoObjeto = `A CONTRATADA compromete-se a prestar ao CONTRATANTE os serviços de marketing digital denominados "${nomesPacote[tipoServico]}", conforme especificações acordadas.`;
+    const linhasObjeto = doc.splitTextToSize(textoObjeto, pageWidth - 2*margin);
+    doc.text(linhasObjeto, margin, y);
+    y += linhasObjeto.length * 5 + 3;
+
+    const descServicos = document.getElementById('desc_servicos').value.trim();
+    if(descServicos) {
+      const linhasDesc = doc.splitTextToSize(descServicos, pageWidth - 2*margin);
+      doc.text(linhasDesc, margin, y);
+      y += linhasDesc.length * 5 + 5;
+    }
+
+    y += 5;
+
+    // CLÁUSULA 2 - VALORES
+    doc.setFontSize(11);
+    doc.setTextColor(30, 58, 138);
+    doc.setFont('helvetica', 'bold');
+    doc.text('CLÁUSULA 2.ª — VALORES E CONDIÇÕES DE PAGAMENTO', margin, y);
+    y += 6;
+
+    doc.setFontSize(9);
+    doc.setTextColor(0, 0, 0);
+    doc.setFont('helvetica', 'normal');
+
+    const valorBase = parseFloat(document.getElementById('valor_base').value);
+    const periodicidade = document.getElementById('periodicidade').value;
+    const valorTotal = document.getElementById('sum_total').textContent;
+
+    const periodosTexto = {
+      mensal: 'mensalmente',
+      trimestral: 'trimestralmente, com desconto de 10%',
+      semestral: 'semestralmente, com desconto de 15%',
+      anual: 'anualmente, com desconto de 20%'
+    };
+
+    const textoValor = `2.1. O valor base dos serviços é de €${valorBase.toFixed(2)}/mês, a ser pago ${periodosTexto[periodicidade]}, totalizando ${valorTotal} por período de faturação, com IVA à taxa legal em vigor já incluído.`;
+    const linhasValor = doc.splitTextToSize(textoValor, pageWidth - 2*margin);
+    doc.text(linhasValor, margin, y);
+    y += linhasValor.length * 5 + 5;
+
+    const diaVencimento = document.getElementById('dia_vencimento').value;
+    const formaPagamento = document.getElementById('forma_pagamento').value;
+    const formasPagTexto = {
+      transferencia: 'Transferência Bancária',
+      mbway: 'MB Way',
+      multibanco: 'Multibanco (Referência)',
+      debito: 'Débito Direto'
+    };
+
+    doc.text(`2.2. O pagamento será efetuado até ao dia ${diaVencimento} de cada período, através de ${formasPagTexto[formaPagamento]}.`, margin, y);
+    y += 10;
+
+    const iban = document.getElementById('iban').value.trim();
+    if(iban) {
+      doc.text(`2.3. Dados bancários: IBAN ${iban}`, margin, y);
+      y += 10;
+    }
+
+    doc.text(`2.4. O atraso no pagamento implica juros de mora à taxa legal em vigor, sem prejuízo da suspensão dos serviços após 15 dias de atraso.`, margin, y);
+    y += 10;
+
+    // CLÁUSULA 3 - PRAZO
+    doc.setFontSize(11);
+    doc.setTextColor(30, 58, 138);
+    doc.setFont('helvetica', 'bold');
+    doc.text('CLÁUSULA 3.ª — PRAZO E VIGÊNCIA', margin, y);
+    y += 6;
+
+    doc.setFontSize(9);
+    doc.setTextColor(0, 0, 0);
+    doc.setFont('helvetica', 'normal');
+
+    const dataInicio = document.getElementById('data_inicio').value;
+    const duracao = document.getElementById('duracao').value;
+    const renovacao = document.getElementById('renovacao').value;
+
+    const dataInicioFormatada = new Date(dataInicio).toLocaleDateString('pt-PT');
+    const duracaoTexto = duracao === 'indeterminado' ? 'prazo indeterminado' : `${duracao} meses`;
+
+    doc.text(`3.1. O presente contrato tem início em ${dataInicioFormatada} e duração de ${duracaoTexto}.`, margin, y);
+    y += 10;
+
+    if(renovacao === 'sim') {
+      doc.text(`3.2. O contrato renova-se automaticamente por períodos iguais, salvo denúncia por qualquer das partes com 30 dias de antecedência.`, margin, y);
+    } else {
+      doc.text(`3.2. O contrato termina automaticamente ao final do prazo, sem renovação automática.`, margin, y);
+    }
+    y += 10;
+
+    // CLÁUSULA 4 - RESCISÃO
+    doc.setFontSize(11);
+    doc.setTextColor(30, 58, 138);
+    doc.setFont('helvetica', 'bold');
+    doc.text('CLÁUSULA 4.ª — RESCISÃO', margin, y);
+    y += 6;
+
+    doc.setFontSize(9);
+    doc.setTextColor(0, 0, 0);
+    doc.setFont('helvetica', 'normal');
+
+    doc.text(`4.1. Qualquer das partes pode rescindir o contrato mediante comunicação escrita com 30 dias de antecedência.`, margin, y);
+    y += 10;
+
+    doc.text(`4.2. Em caso de rescisão antecipada pelo CONTRATANTE, os valores já pagos não serão reembolsados.`, margin, y);
+    y += 10;
+
+    // CLÁUSULA 5 - PROTEÇÃO DE DADOS
+    if(y > pageHeight - 60) {
+      doc.addPage();
+      y = 20;
+    }
+
+    doc.setFontSize(11);
+    doc.setTextColor(30, 58, 138);
+    doc.setFont('helvetica', 'bold');
+    doc.text('CLÁUSULA 5.ª — PROTEÇÃO DE DADOS (RGPD)', margin, y);
+    y += 6;
+
+    doc.setFontSize(9);
+    doc.setTextColor(0, 0, 0);
+    doc.setFont('helvetica', 'normal');
+
+    const textoRGPD = `As partes comprometem-se a cumprir o Regulamento Geral de Proteção de Dados (RGPD - Regulamento UE 2016/679), garantindo a confidencialidade e segurança dos dados pessoais tratados no âmbito deste contrato.`;
+    const linhasRGPD = doc.splitTextToSize(textoRGPD, pageWidth - 2*margin);
+    doc.text(linhasRGPD, margin, y);
+    y += linhasRGPD.length * 5 + 10;
+
+    // CLÁUSULA 6 - FORO
+    doc.setFontSize(11);
+    doc.setTextColor(30, 58, 138);
+    doc.setFont('helvetica', 'bold');
+    doc.text('CLÁUSULA 6.ª — FORO', margin, y);
+    y += 6;
+
+    doc.setFontSize(9);
+    doc.setTextColor(0, 0, 0);
+    doc.setFont('helvetica', 'normal');
+
+    doc.text(`Para resolução de litígios, as partes elegem o foro da comarca de ${contratadaLocal}, com renúncia expressa a qualquer outro.`, margin, y);
+    y += 15;
+
+    // OBSERVAÇÕES
+    const observacoes = document.getElementById('observacoes').value.trim();
+    if(observacoes) {
+      doc.setFontSize(11);
+      doc.setTextColor(30, 58, 138);
+      doc.setFont('helvetica', 'bold');
+      doc.text('OBSERVAÇÕES ADICIONAIS:', margin, y);
+      y += 6;
+
+      doc.setFontSize(9);
+      doc.setTextColor(0, 0, 0);
+      doc.setFont('helvetica', 'normal');
+      const linhasObs = doc.splitTextToSize(observacoes, pageWidth - 2*margin);
+      doc.text(linhasObs, margin, y);
+      y += linhasObs.length * 5 + 10;
+    }
+
+    // ASSINATURAS
+    if(y > pageHeight - 50) {
+      doc.addPage();
+      y = 20;
+    }
+
+    y += 10;
+    doc.setFontSize(9);
+    doc.setTextColor(100, 100, 100);
+    doc.text(`${contratadaLocal}, ${new Date().toLocaleDateString('pt-PT')}`, margin, y);
+    y += 15;
+
+    // Linha de assinatura CONTRATADA
+    doc.setDrawColor(0, 0, 0);
+    doc.setLineWidth(0.3);
+    doc.line(margin, y, (pageWidth / 2) - 10, y);
+    y += 5;
+    doc.setFontSize(9);
+    doc.setTextColor(0, 0, 0);
+    doc.setFont('helvetica', 'bold');
+    doc.text('CONTRATADA', margin, y);
+    y += 4;
+    doc.setFont('helvetica', 'normal');
+    doc.text(contratadaNome, margin, y);
+    y += 4;
+    doc.text(contratadaRep, margin, y);
+
+    // Linha de assinatura CONTRATANTE
+    y -= 13;
+    doc.setLineWidth(0.3);
+    doc.line((pageWidth / 2) + 10, y, pageWidth - margin, y);
+    y += 5;
+    doc.setFont('helvetica', 'bold');
+    doc.text('CONTRATANTE', (pageWidth / 2) + 10, y);
+    y += 4;
+    doc.setFont('helvetica', 'normal');
+    doc.text(contratanteNome, (pageWidth / 2) + 10, y);
+    if(contratanteRep) {
+      y += 4;
+      doc.text(contratanteRep, (pageWidth / 2) + 10, y);
+    }
+
+    // SALVAR
+    const nomeArquivo = `Contrato_${contratanteNome.replace(/\s+/g, '_')}_${new Date().toISOString().slice(0,10)}.pdf`;
+    doc.save(nomeArquivo);
+
+    alert('✅ Contrato gerado com sucesso!');
+  }
+</script>
+</body>
+</html>

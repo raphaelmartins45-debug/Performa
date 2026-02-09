@@ -1,0 +1,794 @@
+<!doctype html>
+<html lang="pt-PT">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Performa LAB — Gerador de Proposta Comercial v5</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <style>
+    :root{
+      --bg:#0b0f19; --card:#121a2a; --muted:#8ea0c1; --text:#eaf0ff;
+      --accent:#FFB84D; --accent2:#1E3A8A; --danger:#ff6a8b; --ok:#34d399;
+      --border:rgba(255,255,255,.10);
+      --shadow: 0 12px 30px rgba(0,0,0,.35);
+      --radius: 18px;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial;
+      background: radial-gradient(1200px 800px at 10% 0%, rgba(255,184,77,.12), transparent 60%),
+                  radial-gradient(900px 700px at 90% 10%, rgba(30,58,138,.12), transparent 55%),
+                  var(--bg);
+      color:var(--text);
+      padding:20px;
+    }
+    .wrap{max-width:900px; margin:0 auto; padding:20px; background:var(--card); border-radius:var(--radius); box-shadow:var(--shadow); border:1px solid var(--border);}
+    
+    header{
+      display:flex; flex-wrap:wrap; gap:14px; align-items:center; justify-content:space-between;
+      margin-bottom:24px; padding-bottom:16px; border-bottom:1px solid var(--border);
+    }
+    .brand{display:flex; gap:12px; align-items:center;}
+    .logo{
+      width:50px; height:50px; border-radius:14px;
+      background:url('https://cdn.abacus.ai/images/489d8ed5-8803-4d48-981f-2f5a6b8ef9d3.png') center/contain no-repeat;
+      box-shadow: var(--shadow);
+    }
+    h1{font-size:20px; margin:0; color:var(--accent);}
+    .sub{color:var(--muted); font-size:13px; margin-top:2px}
+
+    .section{margin-bottom:24px;}
+    .section h2{
+      font-size:14px; margin:0 0 12px; letter-spacing:.3px; text-transform:uppercase;
+      color:rgba(234,240,255,.92); border-left:3px solid var(--accent); padding-left:10px;
+    }
+
+    label{display:block; font-size:13px; color:rgba(234,240,255,.88); margin:10px 0 6px; font-weight:600;}
+    label.required::after{content:" *"; color:var(--danger);}
+    
+    input[type="text"], input[type="tel"], input[type="email"], input[type="number"], input[type="date"], textarea, select{
+      width:100%; background:rgba(255,255,255,.05); border:1px solid var(--border);
+      color:var(--text); padding:12px; border-radius:14px; outline:none; font-size:14px; transition:.2s;
+    }
+    input:focus, select:focus, textarea:focus{
+      border-color:var(--accent); box-shadow:0 0 0 3px rgba(255,184,77,.1);
+    }
+    textarea{min-height:80px; resize:vertical;}
+
+    .row{display:grid; grid-template-columns:1fr; gap:12px;}
+    @media(min-width:700px){ .row.two{grid-template-columns:1fr 1fr;} }
+
+    .checks{display:grid; grid-template-columns:1fr; gap:8px; margin-top:8px;}
+    @media(min-width:520px){ .checks{grid-template-columns:1fr 1fr;} }
+    .check{
+      display:flex; gap:10px; align-items:flex-start; padding:10px;
+      border:1px solid var(--border); border-radius:14px; background:rgba(255,255,255,.03); transition:.2s;
+    }
+    .check:hover{background:rgba(255,255,255,.06);}
+    .check input{transform:scale(1.25); margin-top:2px; cursor:pointer;}
+    .check label{margin:0; font-weight:500; cursor:pointer;}
+    .check small{display:block; color:var(--muted); margin-top:2px; font-size:12px;}
+
+    .price-input{
+      display:flex; gap:8px; align-items:center;
+    }
+    .price-input input{flex:1;}
+    .price-input span{color:var(--muted); font-size:13px;}
+
+    .summary{
+      background:rgba(255,184,77,.08); border:1px solid rgba(255,184,77,.25);
+      border-radius:14px; padding:16px; margin-top:16px;
+    }
+    .summary h3{margin:0 0 10px; font-size:15px; color:var(--accent);}
+    .summary-line{
+      display:flex; justify-content:space-between; padding:6px 0;
+      border-bottom:1px solid var(--border); font-size:14px;
+    }
+    .summary-line:last-child{border:none; font-weight:700; font-size:16px; color:var(--accent);}
+
+    button{
+      border:1px solid var(--border); background:rgba(255,255,255,.06);
+      color:var(--text); padding:12px 18px; border-radius:14px; font-weight:600;
+      cursor:pointer; backdrop-filter:blur(10px); font-size:14px; transition:.2s;
+      width:100%; margin-top:10px;
+    }
+    button.primary{
+      background:linear-gradient(135deg, rgba(255,184,77,.25), rgba(30,58,138,.25));
+      border-color:rgba(255,184,77,.45);
+    }
+    button:hover{transform:translateY(-1px); box-shadow:0 4px 12px rgba(0,0,0,.2);}
+    button:active{transform:translateY(1px);}
+
+    .alert{
+      background:rgba(52,211,153,.1); border:1px solid rgba(52,211,153,.3);
+      border-radius:14px; padding:12px; margin-bottom:16px; font-size:13px;
+      display:flex; gap:10px; align-items:center;
+    }
+    .alert.info{background:rgba(30,58,138,.1); border-color:rgba(30,58,138,.3);}
+
+    .hidden{display:none;}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div class="brand">
+        <div class="logo" aria-hidden="true"></div>
+        <div>
+          <h1>Gerador de Proposta Comercial v5</h1>
+          <div class="sub">Integrado com Briefing de Diagnóstico</div>
+        </div>
+      </div>
+    </header>
+
+    <div id="alert-prefill" class="alert info hidden">
+      <span>✅</span>
+      <div><strong>Dados carregados do Briefing!</strong> Verifique e ajuste se necessário.</div>
+    </div>
+
+    <form id="form">
+      <!-- DADOS DO CLIENTE -->
+      <div class="section">
+        <h2>📋 Dados do Cliente</h2>
+        <div class="row two">
+          <div>
+            <label class="required">Nome do Restaurante</label>
+            <input id="nome_cliente" type="text" required />
+          </div>
+          <div>
+            <label class="required">Cidade / Bairro</label>
+            <input id="local" type="text" required />
+          </div>
+        </div>
+        <div class="row two">
+          <div>
+            <label>Contacto</label>
+            <input id="contacto" type="tel" />
+          </div>
+          <div>
+            <label>Email</label>
+            <input id="email" type="email" />
+          </div>
+        </div>
+      </div>
+
+      <!-- DIAGNÓSTICO -->
+      <div class="section">
+        <h2>🎯 Diagnóstico & Contexto</h2>
+        <label>Problema / Dor identificada</label>
+        <textarea id="problema" placeholder="Ex.: Dependência alta de plataformas (40%+ do faturamento), presença digital desalinhada com qualidade do restaurante..."></textarea>
+        
+        <label>Objetivo do cliente</label>
+        <textarea id="objetivo_cliente" placeholder="Ex.: Reduzir taxas, atrair mais clientes, organizar o digital, escalar..."></textarea>
+      </div>
+
+      <!-- SOLUÇÃO -->
+      <div class="section">
+        <h2>💡 Solução Proposta</h2>
+        
+        <label class="required">Tipo de Proposta</label>
+        <select id="tipo_proposta" required onchange="toggleTipoProposta()">
+          <option value="">— selecionar —</option>
+          <option value="pacote">Pacote Fixo (Start / Core / Scale)</option>
+          <option value="personalizado">Serviços Personalizados</option>
+          <option value="projeto">Projeto Especial</option>
+        </select>
+
+        <!-- PACOTE FIXO -->
+        <div id="area_pacote" class="hidden">
+          <label class="required">Pacote</label>
+          <select id="pacote" onchange="calcularPacote()">
+            <option value="">— selecionar —</option>
+            <option value="start">Performa Start</option>
+            <option value="core">Performa Core (Âncora)</option>
+            <option value="scale">Performa Scale (Premium)</option>
+          </select>
+
+          <label class="required">Valor Acordado (€/mês)</label>
+          <div class="price-input">
+            <span>€</span>
+            <input id="valor_pacote" type="number" min="0" step="0.01" placeholder="Ex.: 497" onchange="calcularTotal()" />
+            <span>/mês</span>
+          </div>
+        </div>
+
+        <!-- SERVIÇOS PERSONALIZADOS -->
+        <div id="area_personalizado" class="hidden">
+          <label>Serviços Incluídos</label>
+          <div class="checks">
+            <div class="check">
+              <input type="checkbox" id="srv_branding" onchange="calcularPersonalizado()">
+              <div>
+                <label for="srv_branding">Branding & Identidade</label>
+                <small>€350</small>
+              </div>
+            </div>
+            <div class="check">
+              <input type="checkbox" id="srv_site" onchange="calcularPersonalizado()">
+              <div>
+                <label for="srv_site">Website Profissional</label>
+                <small>€450</small>
+              </div>
+            </div>
+            <div class="check">
+              <input type="checkbox" id="srv_social" onchange="calcularPersonalizado()">
+              <div>
+                <label for="srv_social">Gestão de Redes Sociais</label>
+                <small>€297/mês</small>
+              </div>
+            </div>
+            <div class="check">
+              <input type="checkbox" id="srv_cardapio" onchange="calcularPersonalizado()">
+              <div>
+                <label for="srv_cardapio">Cardápio Digital QR</label>
+                <small>€150</small>
+              </div>
+            </div>
+            <div class="check">
+              <input type="checkbox" id="srv_foto" onchange="calcularPersonalizado()">
+              <div>
+                <label for="srv_foto">Fotografia Profissional</label>
+                <small>€250</small>
+              </div>
+            </div>
+            <div class="check">
+              <input type="checkbox" id="srv_ads" onchange="calcularPersonalizado()">
+              <div>
+                <label for="srv_ads">Campanhas Pagas (Meta/Google)</label>
+                <small>€397/mês</small>
+              </div>
+            </div>
+          </div>
+
+          <label>Ajuste Manual (opcional)</label>
+          <div class="price-input">
+            <span>€</span>
+            <input id="valor_manual" type="number" min="0" step="0.01" placeholder="0.00" onchange="calcularPersonalizado()" />
+          </div>
+        </div>
+
+        <!-- PROJETO ESPECIAL -->
+        <div id="area_projeto" class="hidden">
+          <label class="required">Descrição do Projeto</label>
+          <textarea id="desc_projeto" placeholder="Ex.: Rebranding completo + lançamento de nova unidade + sistema de reservas integrado..."></textarea>
+          
+          <label class="required">Valor do Projeto (€)</label>
+          <div class="price-input">
+            <span>€</span>
+            <input id="valor_projeto" type="number" min="0" step="0.01" placeholder="Ex.: 2500" onchange="calcularTotal()" />
+          </div>
+        </div>
+
+        <!-- PERIODICIDADE & DESCONTOS -->
+        <div id="area_periodicidade" class="hidden">
+          <label class="required">Periodicidade de Pagamento</label>
+          <select id="periodicidade" onchange="calcularTotal()">
+            <option value="mensal">Mensal</option>
+            <option value="trimestral">Trimestral (-10%)</option>
+            <option value="semestral">Semestral (-15%)</option>
+            <option value="anual">Anual (-20%)</option>
+          </select>
+        </div>
+
+        <label>Descrição dos Serviços (opcional)</label>
+        <textarea id="desc_servicos" placeholder="Detalhe o que será entregue..."></textarea>
+      </div>
+
+      <!-- INVESTIMENTO -->
+      <div class="section">
+        <h2>💰 Investimento</h2>
+        <div class="summary">
+          <h3>Resumo Financeiro</h3>
+          <div class="summary-line">
+            <span>Valor Base:</span>
+            <span id="sum_base">€0,00</span>
+          </div>
+          <div class="summary-line" id="line_desconto" style="display:none;">
+            <span id="label_desconto">Desconto:</span>
+            <span id="sum_desconto">€0,00</span>
+          </div>
+          <div class="summary-line">
+            <span>Total (IVA incluído):</span>
+            <span id="sum_total">€0,00</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- PRÓXIMOS PASSOS -->
+      <div class="section">
+        <h2>🚀 Próximos Passos</h2>
+        <textarea id="proximos_passos" placeholder="Ex.: 1) Assinatura do contrato, 2) Briefing de execução, 3) Início em 48h...">1) Assinatura do contrato
+2) Briefing de execução (15-20 min)
+3) Início da implementação em 48h
+4) Acompanhamento semanal com relatórios</textarea>
+      </div>
+
+      <!-- VALIDADE -->
+      <div class="section">
+        <h2>📅 Validade</h2>
+        <div class="row two">
+          <div>
+            <label>Data de Geração</label>
+            <input id="data_geracao" type="date" readonly />
+          </div>
+          <div>
+            <label>Validade (dias)</label>
+            <input id="validade_dias" type="number" value="15" min="1" />
+          </div>
+        </div>
+      </div>
+
+      <button type="button" class="primary" onclick="gerarPDF()">📄 Gerar Proposta em PDF</button>
+    </form>
+  </div>
+
+<script>
+  const KEY_PROPOSTA = "performa_proposta_v5";
+
+  // AUTOSAVE
+  function salvarRascunho() {
+    const campos = ['nome_cliente', 'local', 'contacto', 'email', 'problema', 'objetivo_cliente',
+                    'tipo_proposta', 'pacote', 'valor_pacote', 'valor_manual', 'desc_projeto',
+                    'valor_projeto', 'periodicidade', 'desc_servicos', 'proximos_passos', 'validade_dias'];
+    const state = {};
+    campos.forEach(id => {
+      const el = document.getElementById(id);
+      if(el) state[id] = el.value;
+    });
+    
+    // Salvar checkboxes
+    const checkboxes = ['srv_branding', 'srv_site', 'srv_social', 'srv_cardapio', 'srv_foto', 'srv_ads'];
+    checkboxes.forEach(id => {
+      const el = document.getElementById(id);
+      if(el) state[id] = el.checked;
+    });
+    
+    localStorage.setItem(KEY_PROPOSTA, JSON.stringify(state));
+  }
+
+  function carregarRascunho() {
+    const raw = localStorage.getItem(KEY_PROPOSTA);
+    if(!raw) return false;
+    
+    try {
+      const state = JSON.parse(raw);
+      Object.keys(state).forEach(id => {
+        const el = document.getElementById(id);
+        if(!el) return;
+        
+        if(el.type === 'checkbox') {
+          el.checked = state[id];
+        } else {
+          el.value = state[id];
+        }
+      });
+      
+      toggleTipoProposta();
+      calcularTotal();
+      return true;
+    } catch(e) {
+      console.error('Erro ao carregar rascunho:', e);
+      return false;
+    }
+  }
+
+  // Carregar dados do briefing ou rascunho
+  window.addEventListener('DOMContentLoaded', () => {
+    const prefill = localStorage.getItem('performa_proposta_prefill');
+    
+    if(prefill) {
+      try {
+        const dados = JSON.parse(prefill);
+        document.getElementById('nome_cliente').value = dados.nome_cliente || '';
+        document.getElementById('local').value = dados.local || '';
+        document.getElementById('contacto').value = dados.contacto || '';
+        document.getElementById('email').value = dados.email || '';
+        
+        if(dados.pacote) {
+          document.getElementById('tipo_proposta').value = 'pacote';
+          toggleTipoProposta();
+          document.getElementById('pacote').value = dados.pacote;
+          calcularPacote();
+        }
+
+        document.getElementById('alert-prefill').classList.remove('hidden');
+        localStorage.removeItem('performa_proposta_prefill');
+      } catch(e) {
+        console.error('Erro ao carregar dados do briefing:', e);
+      }
+    } else {
+      // Tentar carregar rascunho
+      carregarRascunho();
+    }
+
+    // Definir data de geração
+    const hoje = new Date().toISOString().split('T')[0];
+    document.getElementById('data_geracao').value = hoje;
+  });
+
+  // Autosave ao digitar
+  document.addEventListener('input', salvarRascunho);
+  document.addEventListener('change', salvarRascunho);
+
+  function toggleTipoProposta() {
+    const tipo = document.getElementById('tipo_proposta').value;
+    
+    document.getElementById('area_pacote').classList.add('hidden');
+    document.getElementById('area_personalizado').classList.add('hidden');
+    document.getElementById('area_projeto').classList.add('hidden');
+    document.getElementById('area_periodicidade').classList.add('hidden');
+
+    if(tipo === 'pacote') {
+      document.getElementById('area_pacote').classList.remove('hidden');
+      document.getElementById('area_periodicidade').classList.remove('hidden');
+    } else if(tipo === 'personalizado') {
+      document.getElementById('area_personalizado').classList.remove('hidden');
+      document.getElementById('area_periodicidade').classList.remove('hidden');
+    } else if(tipo === 'projeto') {
+      document.getElementById('area_projeto').classList.remove('hidden');
+    }
+
+    calcularTotal();
+  }
+
+  function calcularPacote() {
+    const pacote = document.getElementById('pacote').value;
+    const valores = {
+      start: 497,
+      core: 797,
+      scale: 1297
+    };
+    
+    if(valores[pacote]) {
+      document.getElementById('valor_pacote').value = valores[pacote];
+    }
+    
+    calcularTotal();
+  }
+
+  function calcularPersonalizado() {
+    const precos = {
+      srv_branding: 350,
+      srv_site: 450,
+      srv_social: 297,
+      srv_cardapio: 150,
+      srv_foto: 250,
+      srv_ads: 397
+    };
+
+    let total = 0;
+    Object.keys(precos).forEach(id => {
+      const el = document.getElementById(id);
+      if(el && el.checked) {
+        total += precos[id];
+      }
+    });
+
+    const manual = parseFloat(document.getElementById('valor_manual').value) || 0;
+    total += manual;
+
+    calcularTotal(total);
+  }
+
+  function calcularTotal(valorBase = null) {
+    const tipo = document.getElementById('tipo_proposta').value;
+    let base = 0;
+
+    if(tipo === 'pacote') {
+      base = parseFloat(document.getElementById('valor_pacote').value) || 0;
+    } else if(tipo === 'personalizado') {
+      base = valorBase !== null ? valorBase : 0;
+    } else if(tipo === 'projeto') {
+      base = parseFloat(document.getElementById('valor_projeto').value) || 0;
+      document.getElementById('sum_base').textContent = `€${base.toFixed(2)}`;
+      document.getElementById('sum_total').textContent = `€${base.toFixed(2)}`;
+      document.getElementById('line_desconto').style.display = 'none';
+      return;
+    }
+
+    const periodicidade = document.getElementById('periodicidade').value;
+    const descontos = {
+      mensal: 0,
+      trimestral: 0.10,
+      semestral: 0.15,
+      anual: 0.20
+    };
+
+    const desconto = descontos[periodicidade] || 0;
+    const valorDesconto = base * desconto;
+    const total = base - valorDesconto;
+
+    document.getElementById('sum_base').textContent = `€${base.toFixed(2)}`;
+    
+    if(desconto > 0) {
+      document.getElementById('line_desconto').style.display = 'flex';
+      document.getElementById('label_desconto').textContent = `Desconto (${(desconto*100).toFixed(0)}%):`;
+      document.getElementById('sum_desconto').textContent = `-€${valorDesconto.toFixed(2)}`;
+    } else {
+      document.getElementById('line_desconto').style.display = 'none';
+    }
+
+    document.getElementById('sum_total').textContent = `€${total.toFixed(2)}`;
+  }
+
+  function gerarPDF() {
+    const { jsPDF } = window.jspdf;
+    
+    // Validação
+    const nome = document.getElementById('nome_cliente').value.trim();
+    const local = document.getElementById('local').value.trim();
+    const tipo = document.getElementById('tipo_proposta').value;
+
+    if(!nome || !local || !tipo) {
+      alert('⚠️ Preencha todos os campos obrigatórios.');
+      return;
+    }
+
+    const doc = new jsPDF();
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const pageHeight = doc.internal.pageSize.getHeight();
+    const margin = 20;
+    let y = 20;
+
+    // HEADER COM LOGO
+    try {
+      const logoUrl = 'https://cdn.abacus.ai/images/489d8ed5-8803-4d48-981f-2f5a6b8ef9d3.png';
+      const logoImg = new Image();
+      logoImg.crossOrigin = "anonymous";
+      logoImg.src = logoUrl;
+      doc.addImage(logoImg, 'PNG', margin, y, 30, 30);
+    } catch(e) {
+      console.log('Logo não carregado, continuando sem imagem');
+    }
+    
+    doc.setFontSize(22);
+    doc.setTextColor(30, 58, 138);
+    doc.setFont('helvetica', 'bold');
+    doc.text('PROPOSTA COMERCIAL', pageWidth - margin, y + 10, { align: 'right' });
+    
+    doc.setFontSize(10);
+    doc.setTextColor(100, 100, 100);
+    doc.setFont('helvetica', 'normal');
+    doc.text('Performa LAB — Sistema Digital de Vendas', pageWidth - margin, y + 18, { align: 'right' });
+
+    y += 45;
+
+    // LINHA SEPARADORA
+    doc.setDrawColor(255, 184, 77);
+    doc.setLineWidth(0.5);
+    doc.line(margin, y, pageWidth - margin, y);
+    y += 10;
+
+    // DADOS DO CLIENTE
+    doc.setFontSize(12);
+    doc.setTextColor(30, 58, 138);
+    doc.setFont('helvetica', 'bold');
+    doc.text('CLIENTE', margin, y);
+    y += 8;
+
+    doc.setFontSize(10);
+    doc.setTextColor(0, 0, 0);
+    doc.setFont('helvetica', 'normal');
+    doc.text(`Restaurante: ${nome}`, margin, y);
+    y += 6;
+    doc.text(`Localização: ${local}`, margin, y);
+    y += 6;
+
+    const contacto = document.getElementById('contacto').value.trim();
+    const email = document.getElementById('email').value.trim();
+    if(contacto) {
+      doc.text(`Contacto: ${contacto}`, margin, y);
+      y += 6;
+    }
+    if(email) {
+      doc.text(`Email: ${email}`, margin, y);
+      y += 6;
+    }
+
+    y += 5;
+
+    // DIAGNÓSTICO
+    const problema = document.getElementById('problema').value.trim();
+    const objetivo = document.getElementById('objetivo_cliente').value.trim();
+
+    if(problema || objetivo) {
+      doc.setFontSize(12);
+      doc.setTextColor(30, 58, 138);
+      doc.setFont('helvetica', 'bold');
+      doc.text('DIAGNÓSTICO', margin, y);
+      y += 8;
+
+      doc.setFontSize(10);
+      doc.setTextColor(0, 0, 0);
+      doc.setFont('helvetica', 'normal');
+
+      if(problema) {
+        const linhasProblema = doc.splitTextToSize(`Situação Atual: ${problema}`, pageWidth - 2*margin);
+        doc.text(linhasProblema, margin, y);
+        y += linhasProblema.length * 5 + 3;
+      }
+
+      if(objetivo) {
+        const linhasObjetivo = doc.splitTextToSize(`Objetivo: ${objetivo}`, pageWidth - 2*margin);
+        doc.text(linhasObjetivo, margin, y);
+        y += linhasObjetivo.length * 5 + 3;
+      }
+
+      y += 5;
+    }
+
+    // SOLUÇÃO PROPOSTA
+    doc.setFontSize(12);
+    doc.setTextColor(30, 58, 138);
+    doc.setFont('helvetica', 'bold');
+    doc.text('SOLUÇÃO PROPOSTA', margin, y);
+    y += 8;
+
+    doc.setFontSize(10);
+    doc.setTextColor(0, 0, 0);
+    doc.setFont('helvetica', 'normal');
+
+    if(tipo === 'pacote') {
+      const pacote = document.getElementById('pacote').value;
+      const nomesPacote = {
+        start: 'Performa Start',
+        core: 'Performa Core (Âncora)',
+        scale: 'Performa Scale (Premium)'
+      };
+      doc.setFont('helvetica', 'bold');
+      doc.text(`Pacote: ${nomesPacote[pacote] || '—'}`, margin, y);
+      y += 6;
+      doc.setFont('helvetica', 'normal');
+    } else if(tipo === 'personalizado') {
+      doc.setFont('helvetica', 'bold');
+      doc.text('Serviços Personalizados:', margin, y);
+      y += 6;
+      doc.setFont('helvetica', 'normal');
+
+      const servicos = [
+        { id: 'srv_branding', nome: 'Branding & Identidade Visual' },
+        { id: 'srv_site', nome: 'Website Profissional' },
+        { id: 'srv_social', nome: 'Gestão de Redes Sociais' },
+        { id: 'srv_cardapio', nome: 'Cardápio Digital com QR Code' },
+        { id: 'srv_foto', nome: 'Fotografia Profissional' },
+        { id: 'srv_ads', nome: 'Campanhas Pagas (Meta/Google)' }
+      ];
+
+      servicos.forEach(srv => {
+        const el = document.getElementById(srv.id);
+        if(el && el.checked) {
+          doc.text(`• ${srv.nome}`, margin + 5, y);
+          y += 5;
+        }
+      });
+
+      y += 3;
+    } else if(tipo === 'projeto') {
+      const descProjeto = document.getElementById('desc_projeto').value.trim();
+      doc.setFont('helvetica', 'bold');
+      doc.text('Projeto Especial:', margin, y);
+      y += 6;
+      doc.setFont('helvetica', 'normal');
+      
+      if(descProjeto) {
+        const linhasProjeto = doc.splitTextToSize(descProjeto, pageWidth - 2*margin);
+        doc.text(linhasProjeto, margin, y);
+        y += linhasProjeto.length * 5 + 3;
+      }
+    }
+
+    const descServicos = document.getElementById('desc_servicos').value.trim();
+    if(descServicos) {
+      const linhasDesc = doc.splitTextToSize(descServicos, pageWidth - 2*margin);
+      doc.text(linhasDesc, margin, y);
+      y += linhasDesc.length * 5 + 5;
+    }
+
+    // INVESTIMENTO
+    y += 5;
+    doc.setFontSize(12);
+    doc.setTextColor(30, 58, 138);
+    doc.setFont('helvetica', 'bold');
+    doc.text('INVESTIMENTO', margin, y);
+    y += 8;
+
+    // Box de investimento
+    const boxY = y;
+    doc.setFillColor(255, 248, 230);
+    doc.roundedRect(margin, boxY, pageWidth - 2*margin, 30, 3, 3, 'F');
+
+    doc.setFontSize(10);
+    doc.setTextColor(0, 0, 0);
+    doc.setFont('helvetica', 'normal');
+
+    const valorBase = document.getElementById('sum_base').textContent;
+    const valorTotal = document.getElementById('sum_total').textContent;
+    const desconto = document.getElementById('sum_desconto').textContent;
+    const temDesconto = document.getElementById('line_desconto').style.display !== 'none';
+
+    y = boxY + 8;
+    doc.text(`Valor Base: ${valorBase}`, margin + 5, y);
+    y += 6;
+
+    if(temDesconto) {
+      const periodicidade = document.getElementById('periodicidade').value;
+      const labelPeriod = {
+        trimestral: 'Trimestral (-10%)',
+        semestral: 'Semestral (-15%)',
+        anual: 'Anual (-20%)'
+      };
+      doc.text(`Pagamento ${labelPeriod[periodicidade]}: ${desconto}`, margin + 5, y);
+      y += 6;
+    }
+
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(11);
+    doc.setTextColor(255, 184, 77);
+    doc.text(`TOTAL (IVA incluído): ${valorTotal}`, margin + 5, y);
+
+    y = boxY + 35;
+
+    doc.setFontSize(9);
+    doc.setTextColor(100, 100, 100);
+    doc.setFont('helvetica', 'italic');
+    doc.text('* IVA à taxa legal em vigor já incluído no valor apresentado', margin, y);
+
+    y += 10;
+
+    // PRÓXIMOS PASSOS
+    const passos = document.getElementById('proximos_passos').value.trim();
+    if(passos) {
+      y += 5;
+      doc.setFontSize(12);
+      doc.setTextColor(30, 58, 138);
+      doc.setFont('helvetica', 'bold');
+      doc.text('PRÓXIMOS PASSOS', margin, y);
+      y += 8;
+
+      doc.setFontSize(10);
+      doc.setTextColor(0, 0, 0);
+      doc.setFont('helvetica', 'normal');
+      const linhasPassos = doc.splitTextToSize(passos, pageWidth - 2*margin);
+      doc.text(linhasPassos, margin, y);
+      y += linhasPassos.length * 5 + 5;
+    }
+
+    // VALIDADE
+    y += 5;
+    const dataGeracao = document.getElementById('data_geracao').value;
+    const validadeDias = parseInt(document.getElementById('validade_dias').value) || 15;
+    const dataValidade = new Date(dataGeracao);
+    dataValidade.setDate(dataValidade.getDate() + validadeDias);
+
+    doc.setFontSize(9);
+    doc.setTextColor(100, 100, 100);
+    doc.setFont('helvetica', 'italic');
+    doc.text(`Proposta gerada em: ${new Date(dataGeracao).toLocaleDateString('pt-PT')}`, margin, y);
+    y += 5;
+    doc.text(`Validade: ${validadeDias} dias (até ${dataValidade.toLocaleDateString('pt-PT')})`, margin, y);
+
+    // FOOTER
+    doc.setDrawColor(255, 184, 77);
+    doc.setLineWidth(0.5);
+    doc.line(margin, pageHeight - 30, pageWidth - margin, pageHeight - 30);
+
+    doc.setFontSize(10);
+    doc.setTextColor(30, 58, 138);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Michelle Borba', pageWidth / 2, pageHeight - 20, { align: 'center' });
+    
+    doc.setFontSize(9);
+    doc.setTextColor(100, 100, 100);
+    doc.setFont('helvetica', 'normal');
+    doc.text('Gestora Comercial', pageWidth / 2, pageHeight - 15, { align: 'center' });
+    doc.text('Performa LAB', pageWidth / 2, pageHeight - 10, { align: 'center' });
+
+    // SALVAR
+    const nomeArquivo = `Proposta_${nome.replace(/\s+/g, '_')}_${new Date().toISOString().slice(0,10)}.pdf`;
+    doc.save(nomeArquivo);
+
+    alert('✅ Proposta gerada com sucesso!');
+  }
+</script>
+</body>
+</html>
